@@ -9,8 +9,8 @@ This document translates the formal mathematical notation from [`theory/model_de
 | **LaTeX Symbol** | **Python Variable** | **Plain English Meaning** |
 |------------------|---------------------|---------------------------|
 | $\Omega$ | `omega` | Sample space (all possible random outcomes) |
-| $\mathcal{F}_t$ | `filtration_t` or `history_t` | Information available to the agent at time $t$ |
-| $f_t$ | `betting_fraction_t` | Fraction of wealth bet at time $t$ |
+| $\mathcal{F}_t$ | `filtration_t` or `history_t` | Information available at time $t$ (includes $r_1, \ldots, r_t$) |
+| $f_t$ | `betting_fraction_t` | Fraction of wealth bet at time $t-1$ for period $[t-1, t]$ |
 | $r_t$ | `return_t` | Return (gain/loss) at time $t$ |
 | $W_t$ | `wealth_t` | Total wealth at time $t$ |
 | $\mu$ | `mean_return` or `mu` | Expected return (mean) |
@@ -20,50 +20,71 @@ This document translates the formal mathematical notation from [`theory/model_de
 | $\text{CVaR}_{\alpha}$ | `cvar_alpha` | Conditional Value at Risk (average loss in worst $\alpha$ cases) |
 | $K$ | `num_arms` | Number of bandit arms (investment options) |
 | $\hat{\mu}_{i,t}$ | `posterior_mean[i, t]` | Bayesian estimate of arm $i$'s mean at time $t$ |
+| $S_t$ | `state_t` | Hidden regime state at time $t$ |
+| $P$ | `transition_matrix` or `P` | Regime transition matrix |
+| $\theta_s$ | `theta[s]` or `regime_params[s]` | Parameters for regime $s$ |
+| $\pi_t(i)$ | `belief[t, i]` or `pi_t[i]` | Belief (posterior probability) of being in regime $i$ at time $t$ |
+| $\mathcal{L}(r_t \mid S_t)$ | `likelihood(r_t, state)` | Likelihood of observing $r_t$ given regime |
 
 ---
 
 ## 🧠 Concept Walkthrough
 
-### 1. Why is $f_t$ "Predictable" (i.e., $\mathcal{F}_t$-measurable)?
+### 1. Why is $f_t$ "Predictable" (i.e., $\mathcal{F}_{t-1}$-measurable)?
 
 **The Problem: Look-Ahead Bias**
 
 Imagine you're deciding how much to bet on a coin flip. If you could see the outcome *before* betting, you'd always bet big on heads and nothing on tails. This is **cheating** and doesn't work in the real world.
 
-**The Mathematical Fix**
+**The Mathematical Fix (Shreve Time Indexing)**
 
-We require that $f_t \in \mathcal{F}_t$, meaning:
-- **At time $t$**, you can only use information from times $0, 1, \ldots, t-1$ (the past).
-- You **cannot** use $r_t$ (the current return) because it hasn't happened yet.
+We require that $f_t \in \mathcal{F}_{t-1}$, meaning:
+- **At time $t-1$**, you observe all past returns $r_1, \ldots, r_{t-1}$
+- You decide $f_t$ (the bet for period $[t-1, t]$)
+- **At time $t$**, the return $r_t$ is realized and you update wealth
+
+**Timing Convention**:
+- Time $t$: Observe $W_t$ and $r_t$ → Information set is $\mathcal{F}_t = \sigma(r_1, \ldots, r_t)$
+- Decision: Choose $f_{t+1}$ for the next period based on $\mathcal{F}_t$
 
 **In Python Code**
 
 ```python
-def make_decision(history_t):
+def make_decision(history_t, t):
     """
-    Compute betting fraction at time t.
+    Compute betting fraction at time t for period [t, t+1].
     
     Args:
-        history_t: List of past returns [r_0, r_1, ..., r_{t-1}]
+        history_t: List of past returns [r_1, r_2, ..., r_t]
+        t: Current time (we've observed up to r_t)
     
     Returns:
-        f_t: Betting fraction (must NOT depend on r_t!)
+        f_{t+1}: Betting fraction for next period (F_t-measurable)
     """
-    # ✅ CORRECT: Using only past returns
-    mean_estimate = np.mean(history_t)
-    variance_estimate = np.var(history_t)
-    f_t = mean_estimate / variance_estimate  # Kelly fraction
+    # ✅ CORRECT: Using all returns observed up to time t
+    if len(history_t) > 0:
+        mean_estimate = np.mean(history_t)  # Using r_1, ..., r_t
+        variance_estimate = np.var(history_t)
+        f_next = mean_estimate / variance_estimate if variance_estimate > 0 else 0
+    else:
+        f_next = 0.1  # Initial guess at t=0
     
-    # ❌ WRONG: Using current return (not available yet!)
-    # f_t = some_function(r_t)  # This would be cheating!
+    # ❌ WRONG: Using r_{t+1} (not available yet!)
+    # f_next = some_function(r_{t+1})  # This would be cheating!
     
-    return f_t
+    return f_next
 ```
 
 **Intuition**
 
-Think of $\mathcal{F}_t$ as a "knowledge cutoff." At time $t$, you're making a bet for the *next* outcome. You can use everything you've learned so far, but you can't peek into the future.
+Think of the timeline:
+```
+Time t-1: Know {r_1,...,r_{t-1}} → Choose f_t
+Time t:   Observe r_t → Update wealth W_t = W_{t-1}(1 + f_t*r_t) → Choose f_{t+1}
+Time t+1: Observe r_{t+1} → Update wealth W_{t+1} = W_t(1 + f_{t+1}*r_{t+1})
+```
+
+The key: $f_t$ is chosen **before** $r_t$ is revealed.
 
 ---
 
@@ -275,7 +296,7 @@ print(f"CVaR (5%): {cvar_5:.2%}")  # e.g., -18.5%
 ```
 
 ---
-
+---\n\n## 🔗 Connecting the Dots: From Math to Code
 ## 🔗 Connecting the Dots: From Math to Code
 
 ### The Full Simulation Loop
