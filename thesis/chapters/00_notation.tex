@@ -1,0 +1,47 @@
+% Notation Glossary
+% Include after abstract in main.tex
+
+\chapter*{Notation}
+\addcontentsline{toc}{chapter}{Notation}
+
+\begin{tabular}{ll}
+\toprule
+\textbf{Symbol} & \textbf{Description} \\
+\midrule
+\multicolumn{2}{l}{\textit{Probability and Measure}} \\
+$(\Omega, \mathcal{F}, \mathbb{P})$ & Probability space \\
+$\mathcal{F}_t$ & Filtration (information available at time $t$) \\
+$\E[\cdot]$, $\Var(\cdot)$ & Expectation, variance \\
+$\Prob(\cdot)$ & Probability measure \\
+\\
+\multicolumn{2}{l}{\textit{Market and Returns}} \\
+$r_t$ & Return at time $t$ \\
+$\mu$, $\sigma^2$ & Mean return, variance \\
+$\nu$ & Degrees of freedom (Student-$t$) \\
+$S_t$ & Hidden regime state (Bull/Bear) \\
+$A$ & Transition matrix: $A_{ij} = \Prob(S_{t+1} = j \mid S_t = i)$ \\
+\\
+\multicolumn{2}{l}{\textit{Wealth and Risk}} \\
+$W_t$ & Wealth at time $t$ \\
+$W_{\max,t}$ & Peak wealth up to time $t$ \\
+$D_t$ & Drawdown: $(W_{\max,t} - W_t)/W_{\max,t}$ \\
+$\alpha$ & Maximum allowable drawdown \\
+$F_t$ & Floor wealth: $(1-\alpha) W_{\max,t}$ \\
+$C_t$ & Cushion: $W_t - F_t$ \\
+\\
+\multicolumn{2}{l}{\textit{Betting and Strategy}} \\
+$f_t$ & Betting fraction at time $t$ \\
+$f^*$ & Optimal Kelly fraction: $\mu/\sigma^2$ \\
+$m$ & CPPI multiplier \\
+\\
+\multicolumn{2}{l}{\textit{Bayesian Inference}} \\
+$\pi_t$ & Posterior belief: $\Prob(S_t = \text{Bull} \mid \mathcal{F}_t)$ \\
+$\alpha_t(j)$ & Forward variable: $\Prob(S_t = j, Y_{1:t})$ \\
+$B$ & Emission matrix: $b_j(y) = p(y \mid S = j)$ \\
+\\
+\multicolumn{2}{l}{\textit{Information Theory}} \\
+$D_{KL}(P \| Q)$ & Kullback-Leibler divergence \\
+$H(X)$ & Shannon entropy \\
+\\
+\bottomrule
+\end{tabular}

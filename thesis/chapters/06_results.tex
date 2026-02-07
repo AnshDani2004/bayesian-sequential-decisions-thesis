@@ -193,7 +193,11 @@ $\nu$ & Naive Survival & Risk-Constrained Survival & DD Breach \\
 \end{tabular}
 \end{table}
 
-The Risk-Constrained agent achieves \textbf{100\% survival} and \textbf{0\% drawdown breach} across all tail parameters, validating the CPPI mechanism.
+The Risk-Constrained agent achieves \textbf{100\% survival} (95\% CI: [96.4\%, 100\%], $n=100$ Monte Carlo runs) and \textbf{0\% drawdown breach} across all tail parameters, validating the CPPI mechanism.
+
+\begin{remark}[Discrete-Time Caveat]
+These results are probabilistic robustness statements, not mathematical guarantees. In discrete time with jump risk, floor breach remains possible under extreme market moves. The 100\% empirical survival reflects the finite-sample regime and chosen parameters --- see Theorem~\ref{thm:impossibility} for asymptotic limitations.
+\end{remark}
 
 \section{The Efficient Frontier of Survival}
 
@@ -265,7 +269,7 @@ Default parameters ($k = 0.5$, $h = 2.0$) achieve sub-2-step detection with mana
 \begin{enumerate}
     \item \textbf{Detection Success}: Vol-Augmented HMM achieves $\approx 1.9$-step detection lag (target: $<20$ steps)
     
-    \item \textbf{Survival Success}: Risk-Constrained agent achieves 100\% survival rate with 0\% drawdown breach
+    \item \textbf{Survival Success}: Risk-Constrained agent achieves 100\% empirical survival rate (95\% CI: [96.4\%, 100\%]) with 0\% drawdown breach across $n=100$ trials
     
     \item \textbf{Information Gain Validated}: Volatility augmentation provides $\approx 5\times$ information gain, confirming KL divergence predictions
     

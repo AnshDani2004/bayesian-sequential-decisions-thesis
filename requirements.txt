@@ -1,0 +1,21 @@
+# Bayesian Sequential Decision-Making
+# Pinned dependencies for reproducibility
+
+# Core scientific stack
+numpy==1.26.4
+scipy==1.15.3
+pandas==2.2.0
+matplotlib==3.8.2
+
+# High-performance computing
+numba==0.63.1
+
+# Optimization
+cvxpy==1.7.5
+
+# Testing
+pytest==8.0.0
+pytest-cov==4.1.0
+
+# Statistics
+statsmodels>=0.14.0

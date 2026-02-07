@@ -140,59 +140,121 @@ The Vol-Augmented HMM contributes to option (3): by detecting the Bear regime \e
 
 \section{The Impossibility Theorem}
 
-\subsection{Statement}
+\subsection{Probability Space and Assumptions}
 
-We now prove the central theoretical contribution of this thesis.
+We first establish the mathematical framework.
+
+\begin{assumption}[Probability Space]
+\label{assump:prob_space}
+Let $(\Omega, \mathcal{F}, \mathbb{P})$ be a complete probability space with filtration $\{\mathcal{F}_t\}_{t \geq 0}$ satisfying the usual conditions.
+\end{assumption}
+
+\begin{assumption}[Heavy-Tailed Returns]
+\label{assump:heavy_tails}
+The return sequence $\{r_t\}_{t \geq 1}$ is i.i.d. with distribution $F$ satisfying:
+\begin{enumerate}
+    \item[(i)] $\E[r_t] = \mu > 0$ (positive expected return)
+    \item[(ii)] $\Var(r_t) = \infty$ (infinite variance)
+    \item[(iii)] $F$ belongs to the domain of attraction of an $\alpha$-stable law with $1 < \alpha < 2$
+\end{enumerate}
+\end{assumption}
+
+\begin{assumption}[Non-Trivial Strategy]
+\label{assump:nontrivial}
+The betting fraction $f_t$ is $\mathcal{F}_{t-1}$-measurable and satisfies:
+\begin{equation}
+\liminf_{t \to \infty} f_t = f_{\min} > 0 \quad \text{almost surely}
+\end{equation}
+That is, the agent eventually commits to a positive bet.
+\end{assumption}
+
+\begin{definition}[Drawdown]
+The \textbf{drawdown} at time $t$ is:
+\begin{equation}
+D_t = \frac{W_{\max,t} - W_t}{W_{\max,t}} \in [0, 1]
+\end{equation}
+where $W_{\max,t} = \max_{s \leq t} W_s$ is the running peak wealth.
+\end{definition}
+
+\subsection{Supporting Lemmas}
+
+\begin{lemma}[Log-Wealth Variance]
+\label{lemma:log_variance}
+Under Assumptions~\ref{assump:heavy_tails}--\ref{assump:nontrivial}, the log-return process:
+\begin{equation}
+R_t = \ln(1 + f_t r_t)
+\end{equation}
+has $\Var(R_t) = \infty$ for any $f_t > 0$.
+\end{lemma}
+
+\begin{proof}
+For $|x| < 1$, $\ln(1+x) \approx x - x^2/2$. Since $\Var(f_t r_t) = f_t^2 \Var(r_t) = \infty$ for $f_t > 0$, the variance of $R_t$ is also infinite.
+\end{proof}
+
+\begin{lemma}[Stable Limit]
+\label{lemma:stable_limit}
+Under Assumption~\ref{assump:heavy_tails}, the normalized partial sums:
+\begin{equation}
+S_n = \sum_{t=1}^n R_t
+\end{equation}
+(appropriately centered and scaled) converge in distribution to an $\alpha$-stable law with $\alpha < 2$.
+\end{lemma}
+
+\begin{proof}
+This follows from the Generalized Central Limit Theorem (Gnedenko-Kolmogorov, 1954). Since $F$ is in the domain of attraction of an $\alpha$-stable law, the partial sums converge to that law.
+\end{proof}
+
+\begin{lemma}[Unbounded Range]
+\label{lemma:unbounded_range}
+For an $\alpha$-stable process with $\alpha < 2$:
+\begin{equation}
+\limsup_{n \to \infty} S_n - \liminf_{n \to \infty} S_n = \infty \quad \text{a.s.}
+\end{equation}
+\end{lemma}
+
+\begin{proof}
+Unlike Gaussian random walks, $\alpha$-stable processes with $\alpha < 2$ have infinite variance and exhibit unbounded fluctuations. By the law of the iterated logarithm generalized to stable processes, the range of $S_n$ grows without bound.
+\end{proof}
+
+\subsection{Main Result}
 
 \begin{theorem}[Impossibility Theorem]
 \label{thm:impossibility}
-Let $\{r_t\}_{t \geq 1}$ be an i.i.d. sequence of returns with distribution $F$ satisfying:
-\begin{enumerate}
-    \item $\E[r_t] = \mu > 0$ (positive expected return)
-    \item $\Var(r_t) = \infty$ (infinite variance)
-\end{enumerate}
-
-Then for any betting strategy $\{f_t\}$ satisfying $f_t > 0$ eventually almost surely:
+Under Assumptions~\ref{assump:prob_space}--\ref{assump:nontrivial}:
 \begin{equation}
-\Prob\left(\sup_{t \geq 1} D_t > \delta\right) = 1 \quad \text{for all } \delta < 1
+\Prob\left(\sup_{t \geq 1} D_t > \delta\right) = 1 \quad \text{for all } \delta \in (0, 1)
 \end{equation}
-where $D_t = (W_{\max,t} - W_t)/W_{\max,t}$ is the drawdown at time $t$.
 
 In words: \textbf{arbitrarily large drawdowns occur almost surely}.
 \end{theorem}
 
 \begin{proof}
-Let $f_{\min} = \liminf_{t \to \infty} f_t > 0$ be the asymptotic minimum bet (which exists by assumption).
+By Lemma~\ref{lemma:log_variance}, $\Var(R_t) = \infty$.
 
-Consider the single-period return process $R_t = \ln(1 + f_t r_t)$. For small $f_t r_t$:
+By Lemma~\ref{lemma:stable_limit}, the log-wealth process $\ln W_t = \sum_{s=1}^t R_s$ exhibits $\alpha$-stable behavior.
+
+By Lemma~\ref{lemma:unbounded_range}, the range of fluctuations in $\ln W_t$ is unbounded almost surely.
+
+Since drawdown is monotonically related to log-wealth fluctuations:
 \begin{equation}
-R_t \approx f_t r_t - \frac{(f_t r_t)^2}{2}
+D_t = 1 - \exp(\ln W_t - \ln W_{\max,t})
 \end{equation}
+unbounded downward fluctuations in $\ln W_t$ imply $\sup_t D_t \to 1$ almost surely.
 
-Since $\Var(r_t) = \infty$, we have $\Var(f_t r_t) = \infty$ for any $f_t > 0$.
-
-By the generalized central limit theorem (Gnedenko-Kolmogorov), the partial sums:
-\begin{equation}
-S_n = \sum_{t=1}^n R_t
-\end{equation}
-converge to an $\alpha$-stable distribution with $\alpha < 2$.
-
-For stable distributions with $\alpha < 2$, the range of fluctuations is unbounded:
-\begin{equation}
-\limsup_{n \to \infty} S_n - \liminf_{n \to \infty} S_n = \infty \quad \text{a.s.}
-\end{equation}
-
-This implies:
-\begin{equation}
-\limsup_{t \to \infty} D_t = 1 \quad \text{a.s.}
-\end{equation}
-
-Therefore, $\Prob(\sup_t D_t > \delta) = 1$ for all $\delta < 1$.
+Therefore, $\Prob(\sup_t D_t > \delta) = 1$ for any $\delta < 1$.
 \end{proof}
 
 \begin{corollary}[Growth-Safety Trade-off]
-To guarantee $\Prob(D_t > \delta) = 0$, we must have $f_t = 0$ eventually --- i.e., stop betting entirely. Any positive betting fraction incurs unbounded drawdown risk.
+To guarantee $\Prob(D_t > \delta) = 0$ for any $\delta < 1$, we must have $f_t = 0$ eventually almost surely. Any positive betting fraction incurs unbounded drawdown risk.
 \end{corollary}
+
+\begin{remark}[Finite-Time vs Asymptotic]
+The theorem is asymptotic: for any finite horizon $T$, extreme drawdowns remain \emph{possible} but occur with positive probability. The empirical results in Chapter~\ref{ch:results} quantify this probability for realistic horizons.
+\end{remark}
+
+\begin{remark}[Link to Simulation Results]
+Lemma~\ref{lemma:unbounded_range} predicts the increasing spread in terminal wealth observed in Figure~\ref{fig:efficient_frontier}. The CPPI constraint delays but cannot prevent the eventual drawdown exceedance guaranteed by Theorem~\ref{thm:impossibility}.
+\end{remark}
 
 \subsection{Interpretation}
 
