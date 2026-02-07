@@ -1,0 +1,181 @@
+% Chapter 2: Literature Review - A Tale of Two Schools
+
+\chapter{Literature Review}
+\label{ch:literature}
+
+The intellectual history of optimal betting strategies reveals a fascinating collision between two distinct academic traditions: the \emph{Information Theory} school, rooted in signal processing and communication theory, and the \emph{Economics} school, grounded in utility theory and equilibrium analysis. This chapter surveys the development of both traditions and positions the present thesis as a synthesis that resolves their apparent contradictions.
+
+\section{The Information Theory School}
+
+\subsection{Kelly's Original Insight}
+
+John L. Kelly Jr.'s 1956 paper ``A New Interpretation of Information Rate'' \cite{kelly1956} arose from an unusual problem: a gambler with access to a noisy ``private wire'' transmitting the outcomes of horse races before the official results are announced. Kelly recognized this as a communication channel problem and asked: what is the maximum rate at which wealth can grow?
+
+Kelly's central insight was to treat the gambler as a noisy communication channel. The ``side information'' (the private wire) increases the channel capacity, and this capacity increase equates \emph{exactly} to the maximum exponential growth rate of wealth. Formally, if the signal has mutual information $I(X;Y)$ bits, then the maximum achievable growth rate is:
+\begin{equation}
+g^* = I(X;Y) \cdot \log 2
+\label{eq:kelly_information}
+\end{equation}
+
+This equation establishes a profound connection between information theory and finance: \emph{information is money}, in a precise, quantitative sense.
+
+\subsection{Breiman's Rigorous Proofs}
+
+Leo Breiman's 1961 paper ``Optimal Gambling Systems for Favorable Games'' \cite{breiman1961} placed Kelly's intuitions on rigorous mathematical foundations. Breiman proved two fundamental theorems:
+
+\begin{theorem}[Breiman's First Theorem]
+The Kelly bettor's wealth $W_T^{(K)}$ grows faster than any ``essentially different'' strategy $W_T^{(S)}$:
+\begin{equation}
+\lim_{T \to \infty} \frac{W_T^{(K)}}{W_T^{(S)}} = \infty \quad \text{almost surely}
+\label{eq:breiman_dominance}
+\end{equation}
+\end{theorem}
+
+\begin{theorem}[Breiman's Second Theorem]
+The probability of the Kelly bettor falling below a fraction $\epsilon$ of any other strategy's wealth approaches zero:
+\begin{equation}
+\Prob\left(\frac{W_T^{(K)}}{W_T^{(S)}} < \epsilon\right) \to 0 \quad \text{as } T \to \infty
+\label{eq:breiman_safety}
+\end{equation}
+\end{theorem}
+
+These results establish that Kelly betting is \emph{growth-optimal} in the strongest possible sense: not merely in expectation, but almost surely.
+
+\subsection{Thorp's Practical Applications}
+
+Edward O. Thorp transformed Kelly's theory from an academic curiosity into a practical tool \cite{thorp2006}. As a mathematics professor, Thorp first applied the Kelly criterion to blackjack card counting, famously using his system to win consistently at Las Vegas casinos. He later founded the hedge fund Princeton-Newport Partners, which applied similar principles to the stock market.
+
+Thorp's contributions were threefold:
+\begin{enumerate}
+    \item \textbf{Practical Implementation}: He demonstrated that Kelly betting could be implemented in real-world settings despite imperfect information and transaction costs.
+    
+    \item \textbf{Fractional Kelly}: He advocated betting a fraction (typically 50\%) of the Kelly amount to reduce volatility while preserving most of the growth advantage.
+    
+    \item \textbf{Portfolio Extension}: He extended the single-bet Kelly criterion to multi-asset portfolios, laying the groundwork for modern portfolio optimization.
+\end{enumerate}
+
+Thorp's work established that the Information Theory school's prescriptions were not merely theoretical --- they could generate substantial wealth in practice.
+
+\section{The Economics School: Samuelson's Critique}
+
+\subsection{The Fallacy of the Geometric Mean}
+
+Paul Samuelson, the first American Nobel laureate in economics, launched a sustained attack on the Kelly criterion throughout the 1960s and 1970s. His critique is encapsulated in his famous 1979 paper written entirely with one-syllable words: ``Why We Should Not Make Mean Log of Wealth Big Though Years to Act Are Long'' \cite{samuelson1979}.
+
+Samuelson's argument centers on the distinction between \emph{terminal wealth} and \emph{utility of terminal wealth}. The Kelly criterion maximizes the expected logarithm of wealth:
+\begin{equation}
+\max_f \E[\ln W_T]
+\label{eq:kelly_objective}
+\end{equation}
+
+But Samuelson argued that this is only rational for an agent whose utility function is \emph{exactly} $U(W) = \ln W$. For any other utility function $U(W) \neq \ln W$, the Kelly strategy is suboptimal --- and potentially disastrously so.
+
+\subsection{The Law of Large Numbers Fallacy}
+
+A common defense of Kelly betting invokes the law of large numbers: ``In the long run, the Kelly bettor will be ahead almost surely.'' Samuelson dismissed this as a fallacy:
+
+\begin{quote}
+``The law of large numbers applies to the \emph{arithmetic mean} of independent trials. But terminal wealth is not an arithmetic mean --- it is a \emph{product}. The law of large numbers for products is the law of large numbers for the \emph{geometric mean}, which is the exponential of the arithmetic mean of logarithms.''
+\end{quote}
+
+The crux of Samuelson's critique is that maximizing the geometric mean (equivalently, the expected logarithm) does not maximize expected utility for non-log utility functions. An agent with power utility $U(W) = W^\gamma$ (where $\gamma \neq 0$ represents risk aversion) should bet:
+\begin{equation}
+f^{(\gamma)} = \gamma \cdot f^* = \gamma \cdot \frac{\mu}{\sigma^2}
+\label{eq:power_utility_kelly}
+\end{equation}
+
+For a risk-averse agent ($0 < \gamma < 1$), this is less than the Kelly fraction. For a highly risk-averse agent ($\gamma \to 0$), the optimal bet approaches zero.
+
+\subsection{The Persistence of Drawdowns}
+
+Beyond the utility-theoretic critique, Samuelson emphasized the \emph{time path} of wealth under Kelly betting. Even if the Kelly bettor ends up richer ``almost surely,'' the path to that wealth can involve gut-wrenching drawdowns.
+
+Simulations show that a Kelly bettor can experience:
+\begin{itemize}
+    \item 50\% drawdowns in approximately 1 out of every 3 years
+    \item 75\% drawdowns in approximately 1 out of every 10 years
+    \item 90\% drawdowns in approximately 1 out of every 25 years
+\end{itemize}
+
+For most investors, such volatility is psychologically intolerable --- regardless of the theoretical long-run optimality.
+
+\section{Synthesis: Risk-Constrained Kelly}
+
+\subsection{The Busseti-Ryu-Boyd Framework}
+
+The most sophisticated attempt to reconcile Kelly optimality with risk management is the 2016 paper by Busseti, Ryu, and Boyd: ``Risk-Constrained Kelly Gambling'' \cite{busseti2016}. They reformulated the Kelly problem as a constrained optimization:
+\begin{equation}
+\begin{aligned}
+& \maximize_f && \E[\ln(1 + f^T r)] \\
+& \text{subject to} && \Prob(f^T r < -L) \leq \epsilon
+\end{aligned}
+\label{eq:risk_constrained_kelly}
+\end{equation}
+
+The constraint requires that the probability of losing more than $L$ in a single period be at most $\epsilon$. This is a Value-at-Risk (VaR) constraint.
+
+For Gaussian returns, this constraint is convex and can be solved efficiently. The solution interpolates between:
+\begin{itemize}
+    \item $\epsilon = 1$: No constraint, recovering the full Kelly fraction
+    \item $\epsilon \to 0$: Infinitely tight constraint, approaching zero betting
+\end{itemize}
+
+\subsection{Extensions: CVaR and Multi-Period}
+
+Subsequent work has extended the Busseti-Boyd framework in several directions:
+
+\begin{enumerate}
+    \item \textbf{CVaR Constraints}: Replacing VaR with Conditional Value-at-Risk (CVaR) provides a coherent risk measure and maintains convexity \cite{rockafellar2000}.
+    
+    \item \textbf{Multi-Period}: Extending to multi-period settings requires dynamic programming or approximate methods, as the constraint must bind across all future periods.
+    
+    \item \textbf{Parameter Uncertainty}: Bayesian approaches incorporate uncertainty in the parameters $(\mu, \sigma)$ themselves, leading to more conservative betting \cite{maclean2011}.
+\end{enumerate}
+
+\subsection{Limitations: Stationarity and Gaussianity}
+
+The Busseti-Boyd framework, while elegant, rests on two assumptions that are violated in realistic markets:
+
+\begin{assumption}[Stationarity]
+The return distribution $(r_t \sim F)$ is stationary over time.
+\end{assumption}
+
+\begin{assumption}[Tail Regularity]
+The return distribution $F$ has finite variance, typically assumed Gaussian.
+\end{assumption}
+
+When returns are non-stationary (regime-switching) and heavy-tailed (Student-$t$), the convex optimization framework breaks down. The Kelly fraction $f^* = \mu/\sigma^2$ is undefined when $\sigma^2 = \infty$, and the VaR constraint becomes non-convex for heavy-tailed distributions.
+
+\section{The Gap: Learning and Risk Management}
+
+The existing literature treats \emph{learning} (inferring parameters or regimes from data) and \emph{risk management} (constraining betting to limit losses) as separate problems. Bayesian approaches to Kelly betting \cite{maclean2011} incorporate parameter uncertainty but assume stationary regimes. Risk-constrained approaches \cite{busseti2016} incorporate loss constraints but assume known parameters.
+
+This thesis proposes a \emph{unified framework} that simultaneously:
+\begin{enumerate}
+    \item \textbf{Learns} the hidden regime $S_t$ using a Volatility-Augmented HMM
+    \item \textbf{Constrains} the bet using CPPI-like floor protection
+    \item \textbf{Adapts} the Kelly fraction based on posterior regime probabilities
+\end{enumerate}
+
+By integrating Bayesian inference with constrained optimization, we address the limitations of both schools while preserving their insights.
+
+\section{Historical Context: The Kelly-Samuelson Debate}
+
+The disagreement between Kelly (and his followers) and Samuelson reflects a deeper epistemological divide:
+
+\begin{center}
+\begin{tabular}{lcc}
+\toprule
+Aspect & Information Theory & Economics \\
+\midrule
+Objective & Growth rate & Expected utility \\
+Time horizon & $T \to \infty$ & Finite $T$ \\
+Risk preference & Implicit (log) & Explicit (arbitrary $U$) \\
+Probability & Frequentist & Bayesian/subjective \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+This thesis takes a \emph{pragmatic} position: we accept Kelly's growth optimality for agents with logarithmic utility (or long time horizons where log-optimality approximates any utility) while acknowledging Samuelson's risk critique by imposing explicit drawdown constraints.
+
+The synthesis is not merely a compromise but a genuine advance: by formalizing the \emph{cost of survival} (the growth rate sacrificed to achieve bounded drawdowns), we provide a quantitative framework for navigating the growth-safety trade-off.

@@ -1,0 +1,250 @@
+% Appendix C: Python Code
+
+\chapter{Implementation Code}
+\label{app:code}
+
+This appendix provides key Python implementations for the simulation framework. Complete source code is available in the project repository.
+
+\section{Volatility-Augmented HMM}
+
+\begin{verbatim}
+class VolAugmentedHMM:
+    """
+    HMM with 2D observations: [return, volatility].
+    Uses log-space forward algorithm for numerical stability.
+    """
+    
+    def __init__(self, regime_params, transition_matrix, 
+                 vol_window=10, cusum_k=0.5, cusum_h=2.0):
+        self.params = regime_params
+        self.A = transition_matrix
+        self.vol_window = vol_window
+        self.cusum_k = cusum_k
+        self.cusum_h = cusum_h
+        
+        # State: log-alpha (forward variable)
+        self.log_alpha = np.log([0.5, 0.5])
+        self.return_buffer = []
+        self.cusum_minus = 0.0
+    
+    def _gaussian_log_likelihood(self, r, mu, sigma):
+        """Gaussian log-likelihood."""
+        return -0.5 * np.log(2 * np.pi * sigma**2) \
+               - 0.5 * ((r - mu) / sigma)**2
+    
+    def _gamma_log_likelihood(self, v, k, theta):
+        """Gamma log-likelihood."""
+        if v <= 0:
+            return -np.inf
+        return (k - 1) * np.log(v) - v / theta \
+               - k * np.log(theta) - gammaln(k)
+    
+    def update(self, r_t, v_t=None):
+        """
+        Update posterior with new observation.
+        """
+        # Compute volatility if not provided
+        self.return_buffer.append(r_t)
+        if len(self.return_buffer) > self.vol_window:
+            self.return_buffer.pop(0)
+        
+        if v_t is None and len(self.return_buffer) >= 3:
+            v_t = np.std(self.return_buffer)
+        
+        # Compute log-likelihoods for each regime
+        log_lik = np.zeros(2)
+        for j, regime in enumerate(['bull', 'bear']):
+            p = self.params[regime]
+            log_lik[j] = self._gaussian_log_likelihood(
+                r_t, p['mu'], p['sigma']
+            )
+            if v_t is not None:
+                log_lik[j] += self._gamma_log_likelihood(
+                    v_t, p['vol_shape'], p['vol_scale']
+                )
+        
+        # CUSUM update
+        bull_params = self.params['bull']
+        z = (r_t - bull_params['mu']) / bull_params['sigma']
+        self.cusum_minus = max(0, self.cusum_minus - z - self.cusum_k)
+        
+        if self.cusum_minus > self.cusum_h:
+            log_lik[1] += 2.0  # Boost bear likelihood
+        
+        # Forward algorithm (log-space)
+        log_alpha_pred = np.zeros(2)
+        for j in range(2):
+            log_alpha_pred[j] = logsumexp(
+                self.log_alpha + np.log(self.A[:, j])
+            )
+        
+        self.log_alpha = log_lik + log_alpha_pred
+        
+        # Normalize
+        self.log_alpha -= logsumexp(self.log_alpha)
+        
+        return self.get_posterior()
+    
+    def get_posterior(self):
+        """Return posterior probabilities."""
+        return np.exp(self.log_alpha)
+    
+    def get_regime_probability(self, regime):
+        """Return probability of specific regime."""
+        idx = 0 if regime == 'bull' else 1
+        return np.exp(self.log_alpha[idx])
+\end{verbatim}
+
+\section{Risk-Constrained Kelly Agent}
+
+\begin{verbatim}
+class RiskConstrainedKelly:
+    """
+    Kelly criterion with CPPI floor protection.
+    """
+    
+    def __init__(self, n_arms, true_probs, 
+                 max_drawdown=0.20, cppi_multiplier=3.0):
+        self.n_arms = n_arms
+        self.true_probs = np.array(true_probs)
+        self.max_drawdown = max_drawdown
+        self.multiplier = cppi_multiplier
+        
+        # State
+        self.wealth = 1.0
+        self.peak_wealth = 1.0
+        self.floor = (1 - max_drawdown) * self.peak_wealth
+        
+        # Bayesian prior
+        self.alpha = np.ones(n_arms)  # Beta prior
+        self.beta = np.ones(n_arms)
+    
+    def compute_kelly_fraction(self):
+        """Compute Kelly fraction from posterior."""
+        p = self.alpha / (self.alpha + self.beta)
+        # For binary outcome with unit odds
+        f_star = 2 * p - 1
+        return np.clip(f_star, 0, 1)
+    
+    def act(self):
+        """Return bet sizes respecting CPPI constraint."""
+        # Kelly fraction
+        f_kelly = self.compute_kelly_fraction()
+        
+        # Cushion
+        cushion = self.wealth - self.floor
+        cushion_fraction = cushion / self.wealth
+        
+        # CPPI constraint
+        max_bet = self.multiplier * cushion_fraction
+        
+        # Apply constraint
+        f_constrained = np.minimum(f_kelly, max_bet)
+        
+        return f_constrained * self.wealth
+    
+    def update(self, outcomes, wealth=None):
+        """Update posterior and wealth state."""
+        # Bayesian update
+        for i, outcome in enumerate(outcomes):
+            if outcome > 0:
+                self.alpha[i] += 1
+            else:
+                self.beta[i] += 1
+        
+        # Update wealth tracking
+        if wealth is not None:
+            self.wealth = wealth
+            self.peak_wealth = max(self.peak_wealth, wealth)
+            self.floor = (1 - self.max_drawdown) * self.peak_wealth
+\end{verbatim}
+
+\section{Student-t Environment}
+
+\begin{verbatim}
+class StudentTEnvironment:
+    """
+    Single-asset environment with Student-t returns.
+    """
+    
+    def __init__(self, T, mu, sigma, nu, seed=None):
+        self.T = T
+        self.mu = mu
+        self.sigma = sigma
+        self.nu = nu
+        self.rng = np.random.default_rng(seed)
+        
+        self.t = 0
+        self.wealth = 1.0
+        self.wealth_history = [1.0]
+    
+    def reset(self, seed=None):
+        if seed is not None:
+            self.rng = np.random.default_rng(seed)
+        self.t = 0
+        self.wealth = 1.0
+        self.wealth_history = [1.0]
+        return self._get_obs()
+    
+    def step(self, bet_fraction):
+        """Execute one step."""
+        # Generate Student-t return
+        z = self.rng.standard_t(self.nu)
+        r_t = self.mu + self.sigma * z
+        
+        # Update wealth
+        self.wealth *= (1 + bet_fraction * r_t)
+        self.wealth = max(self.wealth, 1e-10)
+        self.wealth_history.append(self.wealth)
+        
+        self.t += 1
+        done = (self.t >= self.T) or (self.wealth < 0.01)
+        
+        return StepResult(
+            return_t=r_t,
+            wealth=self.wealth,
+            done=done
+        )
+\end{verbatim}
+
+\section{Monte Carlo Simulation}
+
+\begin{verbatim}
+def run_experiment(agent_class, env_class, n_runs=100, T=1000):
+    """
+    Run Monte Carlo simulation.
+    """
+    results = {
+        'terminal_wealth': [],
+        'max_drawdown': [],
+        'cagr': []
+    }
+    
+    for run in range(n_runs):
+        env = env_class(T=T, seed=run)
+        agent = agent_class()
+        
+        env.reset()
+        agent.reset()
+        
+        for t in range(T):
+            bets = agent.act()
+            result = env.step(np.sum(bets))
+            agent.update(result)
+            
+            if result.done:
+                break
+        
+        # Compute metrics
+        wealth = np.array(env.wealth_history)
+        peak = np.maximum.accumulate(wealth)
+        drawdown = (peak - wealth) / peak
+        
+        results['terminal_wealth'].append(wealth[-1])
+        results['max_drawdown'].append(np.max(drawdown))
+        results['cagr'].append(
+            (wealth[-1] / wealth[0]) ** (252 / T) - 1
+        )
+    
+    return results
+\end{verbatim}

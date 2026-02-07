@@ -1,0 +1,12 @@
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\contentsline {figure}{\numberline {6.1}{\ignorespaces Anatomy of a Market Crash. \textbf {Top panel}: Asset price (black) and agent wealth trajectories on log scale. The Naive Bayes agent (blue) suffers catastrophic drawdown while the Vol-Augmented HMM agent (green) deleverage early and preserves wealth. \textbf {Bottom panel}: HMM posterior probability $P(\text {Bear} \mid \mathcal {F}_t)$ with detection threshold (dashed). Detection occurs within 2 steps of the regime switch.}}{50}{figure.caption.10}%
+\contentsline {figure}{\numberline {6.2}{\ignorespaces Efficient Frontier: CAGR vs. Maximum Drawdown. The Risk-Constrained Kelly curve (red squares) traces the achievable trade-off. The shaded ``Impossibility Region'' represents combinations of high growth and low drawdown that are mathematically unattainable. Unconstrained Kelly variants (grey circles) lie below the frontier due to excessive risk-taking.}}{53}{figure.caption.15}%
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\addvspace {10\p@ }

@@ -1,0 +1,130 @@
+% Appendix B: Martingale Proofs
+
+\chapter{Martingale Proofs}
+\label{app:martingale_proofs}
+
+This appendix provides rigorous proofs of the martingale properties discussed in Chapter~\ref{ch:foundations}.
+
+\section{Preliminary Definitions}
+
+\begin{definition}[Martingale]
+A stochastic process $\{M_t\}_{t \geq 0}$ is a \textbf{martingale} with respect to filtration $\{\Filt_t\}$ if:
+\begin{enumerate}
+    \item $M_t$ is $\Filt_t$-measurable for all $t$ (adapted)
+    \item $\E[|M_t|] < \infty$ for all $t$ (integrable)
+    \item $\E[M_{t+1} | \Filt_t] = M_t$ almost surely for all $t$
+\end{enumerate}
+\end{definition}
+
+\begin{theorem}[Martingale Convergence Theorem]
+If $\{M_t\}$ is a martingale with $\sup_t \E[|M_t|] < \infty$, then:
+\begin{equation}
+M_t \to M_\infty \quad \text{almost surely}
+\end{equation}
+for some random variable $M_\infty$.
+\end{theorem}
+
+\section{Posterior Beliefs as Levy Martingale}
+
+\begin{theorem}[Levy's Zero-One Law]
+Let $\theta$ be a random variable and $\{\Filt_t\}$ an increasing sequence of $\sigma$-algebras. Define:
+\begin{equation}
+M_t = \E[\theta | \Filt_t]
+\end{equation}
+Then $\{M_t\}$ is a martingale with respect to $\{\Filt_t\}$.
+\end{theorem}
+
+\begin{proof}
+\textbf{Adaptedness:} By definition, $\E[\theta | \Filt_t]$ is $\Filt_t$-measurable.
+
+\textbf{Integrability:} By Jensen's inequality:
+\begin{equation}
+\E[|M_t|] = \E[|\E[\theta | \Filt_t]|] \leq \E[\E[|\theta| | \Filt_t]] = \E[|\theta|] < \infty
+\end{equation}
+
+\textbf{Martingale Property:} By the tower property of conditional expectation:
+\begin{align}
+\E[M_{t+1} | \Filt_t] &= \E[\E[\theta | \Filt_{t+1}] | \Filt_t] \\
+&= \E[\theta | \Filt_t] \quad (\text{since } \Filt_t \subset \Filt_{t+1}) \\
+&= M_t
+\end{align}
+\end{proof}
+
+\section{Application to HMM Posteriors}
+
+In the HMM setting, let $\theta = S_0$ be the initial state (a Bernoulli random variable). The posterior:
+\begin{equation}
+\pi_t^{(0)} = \Prob(S_0 = \text{Bull} | \Filt_t)
+\end{equation}
+is a bounded martingale by Levy's theorem.
+
+\begin{corollary}
+The posterior $\pi_t^{(0)}$ converges almost surely:
+\begin{equation}
+\pi_t^{(0)} \to \mathbf{1}_{S_0 = \text{Bull}} \quad \text{a.s.}
+\end{equation}
+as $t \to \infty$, assuming the observations are informative.
+\end{corollary}
+
+\section{The Current-State Posterior}
+
+The current-state posterior $\pi_t = \Prob(S_t = \text{Bull} | \Filt_t)$ is \textbf{not} a martingale in general, due to the Markov dynamics of $S_t$.
+
+\begin{proposition}
+The current-state posterior satisfies:
+\begin{equation}
+\E[\pi_{t+1} | \Filt_t] = A_{11}\pi_t + A_{21}(1-\pi_t)
+\end{equation}
+where $A$ is the transition matrix.
+\end{proposition}
+
+\begin{proof}
+By the law of total probability:
+\begin{align}
+\E[\pi_{t+1} | \Filt_t] &= \E[\Prob(S_{t+1} = \text{Bull} | \Filt_{t+1}) | \Filt_t] \\
+&= \E[\mathbf{1}_{S_{t+1} = \text{Bull}} | \Filt_t] \\
+&= \Prob(S_{t+1} = \text{Bull} | \Filt_t)
+\end{align}
+
+Using the Markov property and marginalization:
+\begin{align}
+&= \sum_{s \in \mathcal{S}} \Prob(S_{t+1} = \text{Bull} | S_t = s) \cdot \Prob(S_t = s | \Filt_t) \\
+&= A_{11}\pi_t + A_{21}(1-\pi_t)
+\end{align}
+\end{proof}
+
+\begin{remark}
+If $A$ is the identity matrix (no regime switching), then $\E[\pi_{t+1} | \Filt_t] = \pi_t$ and the current-state posterior is a martingale. In general, it is a \textbf{supermartingale} if the current state is ``Bear'' and a \textbf{submartingale} if ``Bull'' (under typical transition dynamics).
+\end{remark}
+
+\section{Wealth Process Martingale Properties}
+
+\begin{proposition}
+Under Kelly betting with correct parameters, the wealth process $\{W_t\}$ is a \textbf{submartingale}:
+\begin{equation}
+\E[W_{t+1} | \Filt_t] \geq W_t
+\end{equation}
+\end{proposition}
+
+\begin{proof}
+The wealth evolves as:
+\begin{equation}
+W_{t+1} = W_t(1 + f^* r_{t+1})
+\end{equation}
+
+Taking expectations:
+\begin{equation}
+\E[W_{t+1} | \Filt_t] = W_t(1 + f^* \mu) \geq W_t
+\end{equation}
+since $f^* \mu > 0$ for positive-edge bets.
+\end{proof}
+
+\begin{proposition}
+The \textbf{log-wealth} process under Kelly is a martingale in the limit:
+\begin{equation}
+\E[\ln W_{t+1} | \Filt_t] = \ln W_t + g^*
+\end{equation}
+where $g^* = \E[\ln(1 + f^* r)]$ is the expected log-growth.
+\end{proposition}
+
+This confirms Kelly's fundamental result: the strategy maximizes the drift of the log-wealth process.

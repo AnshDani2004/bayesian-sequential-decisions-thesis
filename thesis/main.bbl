@@ -1,0 +1,51 @@
+\begin{thebibliography}{10}
+
+\bibitem{bernoulli1738}
+{\sc D.~Bernoulli}, {\em Specimen theoriae novae de mensura sortis},
+  Commentarii Academiae Scientiarum Imperialis Petropolitanae, 5 (1738),
+  pp.~175--192.
+
+\bibitem{breiman1961}
+{\sc L.~Breiman}, {\em Optimal gambling systems for favorable games},
+  Proceedings of the Fourth Berkeley Symposium on Mathematical Statistics and
+  Probability, 1 (1961), pp.~65--78.
+
+\bibitem{busseti2016}
+{\sc E.~Busseti, E.~K. Ryu, and S.~Boyd}, {\em Risk-constrained kelly
+  gambling}, Journal of Investing, 25 (2016), pp.~118--134.
+
+\bibitem{cont2001}
+{\sc R.~Cont}, {\em Empirical properties of asset returns: Stylized facts and
+  statistical issues}, Quantitative Finance, 1 (2001), pp.~223--236.
+
+\bibitem{kelly1956}
+{\sc J.~L. Kelly, Jr.}, {\em A new interpretation of information rate}, Bell
+  System Technical Journal, 35 (1956), pp.~917--926.
+
+\bibitem{maclean2011}
+{\sc L.~C. MacLean, E.~O. Thorp, and W.~T. Ziemba}, {\em The Kelly Capital
+  Growth Investment Criterion}, World Scientific, 2011.
+
+\bibitem{mandelbrot1963}
+{\sc B.~Mandelbrot}, {\em The variation of certain speculative prices}, Journal
+  of Business, 36 (1963), pp.~394--419.
+
+\bibitem{neal2011}
+{\sc R.~M. Neal}, {\em {MCMC} using {H}amiltonian dynamics}, Handbook of Markov
+  Chain Monte Carlo,  (2011), pp.~113--162.
+
+\bibitem{rockafellar2000}
+{\sc R.~T. Rockafellar and S.~Uryasev}, {\em Optimization of conditional
+  value-at-risk}, Journal of Risk, 2 (2000), pp.~21--41.
+
+\bibitem{samuelson1979}
+{\sc P.~A. Samuelson}, {\em Why we should not make mean log of wealth big
+  though years to act are long}, Journal of Banking and Finance, 3 (1979),
+  pp.~305--307.
+
+\bibitem{thorp2006}
+{\sc E.~O. Thorp}, {\em The kelly criterion in blackjack, sports betting, and
+  the stock market}, in Handbook of Asset and Liability Management, Elsevier,
+  2006, pp.~385--428.
+
+\end{thebibliography}

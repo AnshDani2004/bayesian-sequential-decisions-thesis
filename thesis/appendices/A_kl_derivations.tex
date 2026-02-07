@@ -1,0 +1,124 @@
+% Appendix A: KL Divergence Derivations
+
+\chapter{Kullback-Leibler Divergence Derivations}
+\label{app:kl_derivations}
+
+This appendix provides complete derivations of the Kullback-Leibler divergence formulas used in Chapter~\ref{ch:methodology}.
+
+\section{Gaussian KL Divergence}
+
+\begin{theorem}
+For $P = \Normal(\mu_1, \sigma_1^2)$ and $Q = \Normal(\mu_2, \sigma_2^2)$:
+\begin{equation}
+\KL(P \| Q) = \ln\frac{\sigma_2}{\sigma_1} + \frac{\sigma_1^2 + (\mu_1 - \mu_2)^2}{2\sigma_2^2} - \frac{1}{2}
+\end{equation}
+\end{theorem}
+
+\begin{proof}
+Starting from the definition:
+\begin{equation}
+\KL(P \| Q) = \int_{-\infty}^{\infty} p(x) \ln \frac{p(x)}{q(x)} \, dx = \E_P\left[\ln \frac{p(X)}{q(X)}\right]
+\end{equation}
+
+The Gaussian densities are:
+\begin{align}
+p(x) &= \frac{1}{\sqrt{2\pi\sigma_1^2}} \exp\left(-\frac{(x-\mu_1)^2}{2\sigma_1^2}\right) \\
+q(x) &= \frac{1}{\sqrt{2\pi\sigma_2^2}} \exp\left(-\frac{(x-\mu_2)^2}{2\sigma_2^2}\right)
+\end{align}
+
+Taking the log-ratio:
+\begin{align}
+\ln \frac{p(x)}{q(x)} &= \ln\frac{\sigma_2}{\sigma_1} - \frac{(x-\mu_1)^2}{2\sigma_1^2} + \frac{(x-\mu_2)^2}{2\sigma_2^2}
+\end{align}
+
+Taking expectations under $P$ (where $X \sim \Normal(\mu_1, \sigma_1^2)$):
+\begin{align}
+\E_P\left[\ln \frac{p(X)}{q(X)}\right] &= \ln\frac{\sigma_2}{\sigma_1} - \frac{\E_P[(X-\mu_1)^2]}{2\sigma_1^2} + \frac{\E_P[(X-\mu_2)^2]}{2\sigma_2^2}
+\end{align}
+
+Using:
+\begin{align}
+\E_P[(X-\mu_1)^2] &= \sigma_1^2 \\
+\E_P[(X-\mu_2)^2] &= \E_P[(X-\mu_1 + \mu_1 - \mu_2)^2] \\
+&= \E_P[(X-\mu_1)^2] + (\mu_1-\mu_2)^2 + 2(\mu_1-\mu_2)\underbrace{\E_P[X-\mu_1]}_{=0} \\
+&= \sigma_1^2 + (\mu_1-\mu_2)^2
+\end{align}
+
+Substituting:
+\begin{align}
+\KL(P \| Q) &= \ln\frac{\sigma_2}{\sigma_1} - \frac{\sigma_1^2}{2\sigma_1^2} + \frac{\sigma_1^2 + (\mu_1-\mu_2)^2}{2\sigma_2^2} \\
+&= \ln\frac{\sigma_2}{\sigma_1} + \frac{\sigma_1^2 + (\mu_1-\mu_2)^2}{2\sigma_2^2} - \frac{1}{2}
+\end{align}
+\end{proof}
+
+\section{Gamma KL Divergence}
+
+\begin{theorem}
+For $P = \text{Gamma}(k_1, \theta_1)$ and $Q = \text{Gamma}(k_2, \theta_2)$:
+\begin{equation}
+\KL(P \| Q) = (k_1 - k_2)\psi(k_1) - \ln\frac{\Gamma(k_1)}{\Gamma(k_2)} + k_2\ln\frac{\theta_2}{\theta_1} + k_1\frac{\theta_1 - \theta_2}{\theta_2}
+\end{equation}
+where $\psi(k) = \frac{d}{dk}\ln\Gamma(k)$ is the digamma function.
+\end{theorem}
+
+\begin{proof}
+The Gamma density is:
+\begin{equation}
+f(x; k, \theta) = \frac{x^{k-1} e^{-x/\theta}}{\theta^k \Gamma(k)}
+\end{equation}
+
+Taking the log-ratio:
+\begin{align}
+\ln \frac{p(x)}{q(x)} &= (k_1-1)\ln x - \frac{x}{\theta_1} - k_1\ln\theta_1 - \ln\Gamma(k_1) \\
+&\quad - (k_2-1)\ln x + \frac{x}{\theta_2} + k_2\ln\theta_2 + \ln\Gamma(k_2) \\
+&= (k_1-k_2)\ln x + x\left(\frac{1}{\theta_2} - \frac{1}{\theta_1}\right) + k_2\ln\theta_2 - k_1\ln\theta_1 + \ln\frac{\Gamma(k_2)}{\Gamma(k_1)}
+\end{align}
+
+Taking expectations under $P$ where $X \sim \text{Gamma}(k_1, \theta_1)$:
+\begin{align}
+\E_P[\ln X] &= \psi(k_1) + \ln\theta_1 \\
+\E_P[X] &= k_1\theta_1
+\end{align}
+
+Substituting:
+\begin{align}
+\KL(P \| Q) &= (k_1-k_2)(\psi(k_1) + \ln\theta_1) + k_1\theta_1\left(\frac{1}{\theta_2} - \frac{1}{\theta_1}\right) \\
+&\quad + k_2\ln\theta_2 - k_1\ln\theta_1 + \ln\frac{\Gamma(k_2)}{\Gamma(k_1)}
+\end{align}
+
+Simplifying:
+\begin{align}
+&= (k_1-k_2)\psi(k_1) + (k_1-k_2)\ln\theta_1 + \frac{k_1\theta_1}{\theta_2} - k_1 + k_2\ln\theta_2 - k_1\ln\theta_1 - \ln\frac{\Gamma(k_1)}{\Gamma(k_2)} \\
+&= (k_1-k_2)\psi(k_1) - \ln\frac{\Gamma(k_1)}{\Gamma(k_2)} + k_2\ln\frac{\theta_2}{\theta_1} + k_1\left(\frac{\theta_1}{\theta_2} - 1\right) \\
+&= (k_1-k_2)\psi(k_1) - \ln\frac{\Gamma(k_1)}{\Gamma(k_2)} + k_2\ln\frac{\theta_2}{\theta_1} + k_1\frac{\theta_1 - \theta_2}{\theta_2}
+\end{align}
+\end{proof}
+
+\section{Numerical Verification}
+
+Using the parameters from Chapter~\ref{ch:methodology}:
+
+\textbf{Gaussian Component:}
+\begin{itemize}
+    \item Bull: $\mu_1 = 0.02$, $\sigma_1 = 0.10$
+    \item Bear: $\mu_2 = -0.02$, $\sigma_2 = 0.20$
+\end{itemize}
+
+\begin{align}
+\KL(\Normal_{\text{Bull}} \| \Normal_{\text{Bear}}) &= \ln\frac{0.20}{0.10} + \frac{0.01 + 0.0016}{0.08} - 0.5 \\
+&= 0.693 + 0.145 - 0.5 = 0.338 \text{ nats}
+\end{align}
+
+\textbf{Gamma Component:}
+\begin{itemize}
+    \item Bull: $k_1 = 2$, $\theta_1 = 0.05$
+    \item Bear: $k_2 = 4$, $\theta_2 = 0.10$
+\end{itemize}
+
+Using $\psi(2) = 1 - \gamma \approx 0.423$ where $\gamma$ is Euler's constant:
+\begin{align}
+\KL(\Gamma_{\text{Bull}} \| \Gamma_{\text{Bear}}) &= (2-4)(0.423) - \ln\frac{1}{6} + 4\ln 2 + 2\frac{-0.05}{0.10} \\
+&= -0.846 + 1.79 + 2.77 - 1.0 = 2.71 \text{ nats}
+\end{align}
+
+\textbf{Total:} $0.338 + 2.71 = 3.05$ nats per observation.

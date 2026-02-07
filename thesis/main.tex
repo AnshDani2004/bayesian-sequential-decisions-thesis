@@ -1,0 +1,156 @@
+% ASU Barrett Honors Thesis Preamble
+% Bayesian Sequential Decision-Making in Non-Stationary, Heavy-Tailed Environments
+
+\documentclass[12pt, oneside]{book}
+
+%% ============================================================================
+%% ASU FORMATTING REQUIREMENTS
+%% ============================================================================
+\usepackage[
+    left=1.25in,
+    right=1.25in,
+    top=1.0in,
+    bottom=1.0in
+]{geometry}
+
+% Double spacing for main text
+\usepackage{setspace}
+\doublespacing
+
+% Font: Computer Modern (LaTeX default, serif)
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+
+%% ============================================================================
+%% MATHEMATICS PACKAGES
+%% ============================================================================
+\usepackage{amsmath,amssymb,amsthm,amsfonts}
+\usepackage{mathtools}
+\usepackage{bm}  % Bold math symbols
+
+%% ============================================================================
+%% FIGURES AND TABLES
+%% ============================================================================
+\usepackage{graphicx}
+\graphicspath{{figures/}}
+\usepackage{booktabs}
+\usepackage{float}
+\usepackage{subcaption}
+
+%% ============================================================================
+%% ALGORITHMS
+%% ============================================================================
+\usepackage{algorithm}
+\usepackage{algorithmic}
+
+%% ============================================================================
+%% HYPERLINKS AND REFERENCES
+%% ============================================================================
+\usepackage[colorlinks=true,linkcolor=blue,citecolor=blue,urlcolor=blue]{hyperref}
+
+%% ============================================================================
+%% BIBLIOGRAPHY
+%% ============================================================================
+\usepackage[numbers,sort&compress]{natbib}
+
+%% ============================================================================
+%% THEOREM ENVIRONMENTS
+%% ============================================================================
+\theoremstyle{plain}
+\newtheorem{theorem}{Theorem}[chapter]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{example}[theorem]{Example}
+\newtheorem{assumption}[theorem]{Assumption}
+
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+
+%% ============================================================================
+%% CUSTOM COMMANDS
+%% ============================================================================
+% Probability and expectation
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\Var}{\mathrm{Var}}
+\newcommand{\Cov}{\mathrm{Cov}}
+\newcommand{\Prob}{\mathbb{P}}
+
+% Sets
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\Z}{\mathbb{Z}}
+
+% Distributions
+\newcommand{\Normal}{\mathcal{N}}
+\newcommand{\Gam}{\text{Gamma}}
+
+% Information theory
+\newcommand{\KL}{D_{\mathrm{KL}}}
+\newcommand{\Info}{\mathcal{I}}
+
+% Filtration
+\newcommand{\Filt}{\mathcal{F}}
+
+% Argmax/min
+\DeclareMathOperator*{\argmax}{arg\,max}
+\DeclareMathOperator*{\argmin}{arg\,min}
+
+%% ============================================================================
+%% TITLE PAGE INFORMATION
+%% ============================================================================
+\title{Bayesian Sequential Decision-Making in Non-Stationary, Heavy-Tailed Environments}
+\author{Ansh Dani}
+\date{May 2026}
+
+%% ============================================================================
+%% DOCUMENT
+%% ============================================================================
+\begin{document}
+
+% Front matter (Roman numerals)
+\frontmatter
+
+% Title page
+\include{chapters/00_titlepage}
+
+% Abstract
+\include{chapters/00_abstract}
+
+% Acknowledgments (optional)
+% \include{chapters/00_acknowledgments}
+
+% Table of contents
+\tableofcontents
+\listoffigures
+\listoftables
+
+% Main matter (Arabic numerals)
+\mainmatter
+
+% Chapters
+\include{chapters/01_introduction}
+\include{chapters/02_literature}
+\include{chapters/03_foundations}
+\include{chapters/04_methodology}
+\include{chapters/05_optimization}
+\include{chapters/06_results}
+\include{chapters/07_conclusion}
+
+% Back matter
+\backmatter
+
+% Bibliography
+\bibliographystyle{siam}
+\bibliography{bibliography}
+
+% Appendices
+\appendix
+\include{appendices/A_kl_derivations}
+\include{appendices/B_martingale_proofs}
+\include{appendices/C_code}
+
+\end{document}

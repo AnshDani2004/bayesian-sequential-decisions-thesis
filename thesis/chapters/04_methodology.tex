@@ -1,0 +1,348 @@
+% Chapter 4: Methodology - The Volatility-Augmented Agent
+
+\chapter{Methodology}
+\label{ch:methodology}
+
+This chapter presents the primary methodological innovation of the thesis: the Volatility-Augmented Hidden Markov Model. We derive the information-theoretic justification for volatility augmentation, compute the Kullback-Leibler divergence for the joint observation space, and describe the computational algorithms for online inference.
+
+\section{The Standard HMM for Regime Detection}
+
+\subsection{Model Specification}
+
+A Hidden Markov Model consists of:
+\begin{itemize}
+    \item \textbf{Hidden States}: $S_t \in \mathcal{S} = \{\text{Bull}, \text{Bear}\}$
+    \item \textbf{Transition Matrix}: $A = [a_{ij}]$ where $a_{ij} = \Prob(S_{t+1} = j \mid S_t = i)$
+    \item \textbf{Emission Distributions}: $b_j(r) = p(r_t \mid S_t = j)$
+    \item \textbf{Initial Distribution}: $\pi_0 = \Prob(S_0 = \text{Bull})$
+\end{itemize}
+
+For standard return-based HMMs, the emission is Gaussian:
+\begin{equation}
+b_j(r) = \Normal(r; \mu_j, \sigma_j^2) = \frac{1}{\sqrt{2\pi\sigma_j^2}} \exp\left(-\frac{(r - \mu_j)^2}{2\sigma_j^2}\right)
+\label{eq:gaussian_emission}
+\end{equation}
+
+\subsection{The Forward Algorithm}
+
+The posterior probability of being in state $j$ at time $t$ is computed using the \textbf{forward algorithm}:
+
+\begin{definition}[Forward Variable]
+\begin{equation}
+\alpha_t(j) = \Prob(r_1, \ldots, r_t, S_t = j)
+\label{eq:forward_variable}
+\end{equation}
+\end{definition}
+
+\begin{algorithm}[H]
+\caption{Forward Algorithm}
+\label{alg:forward}
+\begin{algorithmic}[1]
+\STATE \textbf{Initialization:} $\alpha_0(j) = \pi_0(j)$ for all $j \in \mathcal{S}$
+\FOR{$t = 1$ to $T$}
+    \FOR{$j \in \mathcal{S}$}
+        \STATE $\alpha_t(j) = b_j(r_t) \cdot \sum_{i \in \mathcal{S}} \alpha_{t-1}(i) \cdot a_{ij}$
+    \ENDFOR
+    \STATE Normalize: $\alpha_t(j) \leftarrow \alpha_t(j) / \sum_k \alpha_t(k)$
+\ENDFOR
+\RETURN $\pi_t(j) = \alpha_t(j)$ as posterior probabilities
+\end{algorithmic}
+\end{algorithm}
+
+The normalization step prevents numerical underflow and yields the \emph{filtered} posterior $\pi_t = \Prob(S_t = \text{Bull} \mid r_1, \ldots, r_t)$.
+
+\subsection{Limitations of Return-Only Observations}
+
+The standard HMM uses only returns $r_t$ to infer the hidden state. This creates a fundamental problem: \textbf{return overlap}.
+
+\begin{example}[Distribution Overlap]
+With parameters $\mu_{\text{Bull}} = 0.02$, $\sigma_{\text{Bull}} = 0.10$ and $\mu_{\text{Bear}} = -0.02$, $\sigma_{\text{Bear}} = 0.20$:
+\begin{itemize}
+    \item A return of $r_t = 0$ is equally consistent with both regimes
+    \item A return of $r_t = -0.10$ could arise from Bear (typical) or Bull (1-sigma tail)
+\end{itemize}
+\end{example}
+
+The degree of overlap can be quantified using the Kullback-Leibler divergence.
+
+\section{Information-Theoretic Analysis}
+
+\subsection{The Kullback-Leibler Divergence}
+
+\begin{definition}[Kullback-Leibler Divergence]
+For continuous distributions $P$ and $Q$ with densities $p$ and $q$:
+\begin{equation}
+\KL(P \| Q) = \int_{-\infty}^{\infty} p(x) \ln \frac{p(x)}{q(x)} \, dx
+\label{eq:kl_definition}
+\end{equation}
+\end{definition}
+
+The KL divergence measures the ``distance'' between distributions. Key properties:
+\begin{itemize}
+    \item $\KL(P \| Q) \geq 0$ with equality iff $P = Q$
+    \item Asymmetric: generally $\KL(P \| Q) \neq \KL(Q \| P)$
+    \item Related to the log-likelihood ratio: $\KL(P \| Q) = \E_P[\ln(p/q)]$
+\end{itemize}
+
+\subsection{KL Divergence for Gaussian Distributions}
+
+\begin{theorem}[Gaussian KL Divergence]
+\label{thm:gaussian_kl}
+For $P = \Normal(\mu_1, \sigma_1^2)$ and $Q = \Normal(\mu_2, \sigma_2^2)$:
+\begin{equation}
+\KL(\Normal_1 \| \Normal_2) = \ln\frac{\sigma_2}{\sigma_1} + \frac{\sigma_1^2 + (\mu_1 - \mu_2)^2}{2\sigma_2^2} - \frac{1}{2}
+\label{eq:gaussian_kl}
+\end{equation}
+\end{theorem}
+
+\begin{proof}
+Starting from the definition:
+\begin{align}
+\KL(\Normal_1 \| \Normal_2) &= \int p_1(x) \ln \frac{p_1(x)}{p_2(x)} \, dx \\
+&= \E_1\left[\ln p_1(X) - \ln p_2(X)\right]
+\end{align}
+
+Substituting the Gaussian densities:
+\begin{align}
+\ln p_1(x) &= -\frac{1}{2}\ln(2\pi\sigma_1^2) - \frac{(x-\mu_1)^2}{2\sigma_1^2} \\
+\ln p_2(x) &= -\frac{1}{2}\ln(2\pi\sigma_2^2) - \frac{(x-\mu_2)^2}{2\sigma_2^2}
+\end{align}
+
+Taking the difference and expectation under $P_1$:
+\begin{align}
+\KL(\Normal_1 \| \Normal_2) &= \frac{1}{2}\ln\frac{\sigma_2^2}{\sigma_1^2} + \E_1\left[\frac{(X-\mu_2)^2}{2\sigma_2^2} - \frac{(X-\mu_1)^2}{2\sigma_1^2}\right]
+\end{align}
+
+Using $\E_1[(X-\mu_1)^2] = \sigma_1^2$ and $\E_1[(X-\mu_2)^2] = \sigma_1^2 + (\mu_1-\mu_2)^2$:
+\begin{equation}
+\KL(\Normal_1 \| \Normal_2) = \ln\frac{\sigma_2}{\sigma_1} + \frac{\sigma_1^2 + (\mu_1-\mu_2)^2}{2\sigma_2^2} - \frac{1}{2}
+\end{equation}
+\end{proof}
+
+\begin{example}[Numerical Calculation]
+With $\mu_{\text{Bull}} = 0.02$, $\sigma_{\text{Bull}} = 0.10$, $\mu_{\text{Bear}} = -0.02$, $\sigma_{\text{Bear}} = 0.20$:
+\begin{align}
+\KL(\Normal_{\text{Bull}} \| \Normal_{\text{Bear}}) &= \ln\frac{0.20}{0.10} + \frac{0.01 + 0.0016}{2 \times 0.04} - 0.5 \\
+&= 0.693 + 0.145 - 0.5 = 0.338 \text{ nats}
+\end{align}
+
+The symmetric measure:
+\begin{align}
+\KL(\Normal_{\text{Bear}} \| \Normal_{\text{Bull}}) &= \ln\frac{0.10}{0.20} + \frac{0.04 + 0.0016}{2 \times 0.01} - 0.5 \\
+&= -0.693 + 2.08 - 0.5 = 0.887 \text{ nats}
+\end{align}
+
+Average: $\bar{\KL} \approx 0.61$ nats per observation.
+\end{example}
+
+\section{The Volatility-Augmented Observation}
+
+\subsection{Augmented Observation Vector}
+
+We propose augmenting the observation to include rolling volatility:
+\begin{equation}
+y_t = \begin{pmatrix} r_t \\ v_t \end{pmatrix}
+\label{eq:augmented_obs}
+\end{equation}
+where the rolling volatility is:
+\begin{equation}
+v_t = \sqrt{\frac{1}{L} \sum_{i=0}^{L-1} (r_{t-i} - \bar{r})^2}
+\label{eq:rolling_vol}
+\end{equation}
+with window length $L$ (typically 5--20 periods).
+
+\subsection{Gamma Distribution for Volatility}
+
+Realized volatility is strictly positive and right-skewed. The Gamma distribution provides a natural model:
+
+\begin{definition}[Gamma Distribution]
+$X \sim \Gam(k, \theta)$ has density:
+\begin{equation}
+f(x; k, \theta) = \frac{x^{k-1} e^{-x/\theta}}{\theta^k \Gamma(k)}, \quad x > 0
+\label{eq:gamma_pdf}
+\end{equation}
+where $k$ is the shape parameter and $\theta$ is the scale parameter.
+\end{definition}
+
+The moments are:
+\begin{align}
+\E[X] &= k\theta \\
+\Var(X) &= k\theta^2
+\end{align}
+
+We model volatility as:
+\begin{equation}
+v_t \mid S_t = j \sim \Gam(k_j, \theta_j)
+\label{eq:vol_gamma}
+\end{equation}
+with regime-specific parameters:
+\begin{center}
+\begin{tabular}{lcc}
+\toprule
+Parameter & Bull & Bear \\
+\midrule
+Shape $k$ & 2.0 & 4.0 \\
+Scale $\theta$ & 0.05 & 0.10 \\
+Mean $k\theta$ & 0.10 & 0.40 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{KL Divergence for Gamma Distributions}
+
+\begin{theorem}[Gamma KL Divergence]
+\label{thm:gamma_kl}
+For $P = \Gam(k_1, \theta_1)$ and $Q = \Gam(k_2, \theta_2)$:
+\begin{equation}
+\KL(\Gam_1 \| \Gam_2) = (k_1 - k_2)\psi(k_1) - \ln\frac{\Gamma(k_1)}{\Gamma(k_2)} + k_2\ln\frac{\theta_2}{\theta_1} + k_1\frac{\theta_1 - \theta_2}{\theta_2}
+\label{eq:gamma_kl}
+\end{equation}
+where $\psi(k) = \frac{d}{dk}\ln\Gamma(k)$ is the digamma function.
+\end{theorem}
+
+\begin{proof}
+See Appendix~\ref{app:kl_derivations} for the complete derivation.
+\end{proof}
+
+\begin{example}[Numerical Calculation]
+With $(k_1, \theta_1) = (2, 0.05)$ (Bull) and $(k_2, \theta_2) = (4, 0.10)$ (Bear):
+
+Using $\psi(2) \approx 0.423$ and $\psi(4) \approx 1.256$:
+\begin{align}
+\KL(\Gam_{\text{Bull}} \| \Gam_{\text{Bear}}) &= (2-4)(0.423) - \ln\frac{\Gamma(2)}{\Gamma(4)} + 4\ln\frac{0.10}{0.05} + 2\frac{0.05-0.10}{0.10} \\
+&= -0.846 - \ln\frac{1}{6} + 4(0.693) - 1.0 \\
+&= -0.846 + 1.79 + 2.77 - 1.0 = 2.71 \text{ nats}
+\end{align}
+\end{example}
+
+\subsection{Total Information Gain}
+
+\begin{proposition}[Additive Information]
+\label{prop:additive_info}
+Assuming conditional independence of returns and volatility given the regime:
+\begin{equation}
+\KL^{\text{total}} = \KL^{\text{returns}} + \KL^{\text{volatility}}
+\label{eq:total_kl}
+\end{equation}
+\end{proposition}
+
+\begin{proof}
+The joint distribution factors as:
+\begin{equation}
+p(r, v \mid S) = p(r \mid S) \cdot p(v \mid S)
+\end{equation}
+
+Therefore:
+\begin{align}
+\KL(P_1^{r,v} \| P_2^{r,v}) &= \E_1\left[\ln\frac{p_1(r)p_1(v)}{p_2(r)p_2(v)}\right] \\
+&= \E_1\left[\ln\frac{p_1(r)}{p_2(r)}\right] + \E_1\left[\ln\frac{p_1(v)}{p_2(v)}\right] \\
+&= \KL(P_1^r \| P_2^r) + \KL(P_1^v \| P_2^v)
+\end{align}
+\end{proof}
+
+\begin{corollary}[Information Gain Ratio]
+The volatility component contributes:
+\begin{equation}
+\frac{\KL^{\text{volatility}}}{\KL^{\text{returns}}} \approx \frac{2.71}{0.61} \approx 4.4
+\end{equation}
+
+Total information per observation increases from $\sim$0.6 nats to $\sim$3.3 nats --- a \textbf{5$\times$ improvement}.
+\end{corollary}
+
+This explains why volatility augmentation dramatically accelerates regime detection: each observation provides 5 times more information for discriminating between regimes.
+
+\section{CUSUM Change-Point Detection}
+
+\subsection{The CUSUM Statistic}
+
+To further accelerate detection, we supplement the HMM with a CUSUM (Cumulative Sum) detector:
+
+\begin{definition}[CUSUM Statistic]
+\begin{equation}
+S_t^- = \max\left(0, S_{t-1}^- + \frac{\mu_{\text{Bull}} - r_t}{\sigma_{\text{Bull}}} - k\right)
+\label{eq:cusum}
+\end{equation}
+where $k > 0$ is the allowance parameter (typically $k = 0.5$).
+\end{definition}
+
+The CUSUM statistic accumulates evidence for a downward shift in the mean. When $S_t^- > h$ (the detection threshold), we boost the Bear likelihood in the HMM.
+
+\subsection{Integration with HMM}
+
+\begin{algorithm}[H]
+\caption{Vol-Augmented HMM with CUSUM}
+\label{alg:vol_hmm}
+\begin{algorithmic}[1]
+\STATE \textbf{Input:} Return $r_t$, volatility $v_t$, previous state $\alpha_{t-1}$, CUSUM $S_{t-1}^-$
+\STATE Compute Gaussian likelihood: $\ell_j^r = \Normal(r_t; \mu_j, \sigma_j^2)$
+\STATE Compute Gamma likelihood: $\ell_j^v = \Gam(v_t; k_j, \theta_j)$
+\STATE Update CUSUM: $S_t^- = \max(0, S_{t-1}^- + (\mu_{\text{Bull}} - r_t)/\sigma_{\text{Bull}} - k)$
+\IF{$S_t^- > h$}
+    \STATE Boost Bear likelihood: $\ell_{\text{Bear}}^v \leftarrow \ell_{\text{Bear}}^v \cdot e^{2.0}$
+\ENDIF
+\STATE Joint likelihood: $\ell_j = \ell_j^r \cdot \ell_j^v$
+\STATE Forward update: $\alpha_t(j) = \ell_j \cdot \sum_i \alpha_{t-1}(i) \cdot a_{ij}$
+\STATE Normalize: $\pi_t(j) = \alpha_t(j) / \sum_k \alpha_t(k)$
+\RETURN $\pi_t$, $S_t^-$
+\end{algorithmic}
+\end{algorithm}
+
+\section{Log-Space Implementation}
+
+\subsection{Numerical Stability}
+
+For long sequences, the forward probabilities $\alpha_t(j)$ become extremely small, causing underflow. We use log-space arithmetic:
+
+\begin{definition}[Log-Forward Variable]
+\begin{equation}
+\tilde{\alpha}_t(j) = \ln \alpha_t(j)
+\label{eq:log_forward}
+\end{equation}
+\end{definition}
+
+The recursion becomes:
+\begin{equation}
+\tilde{\alpha}_t(j) = \ln \ell_j + \text{logsumexp}_i\left(\tilde{\alpha}_{t-1}(i) + \ln a_{ij}\right)
+\label{eq:log_recursion}
+\end{equation}
+where the logsumexp function is:
+\begin{equation}
+\text{logsumexp}(x_1, \ldots, x_n) = \max_i x_i + \ln\sum_i e^{x_i - \max_i x_i}
+\label{eq:logsumexp}
+\end{equation}
+
+This formulation is numerically stable for arbitrarily long sequences.
+
+\section{Connection to Hamiltonian Monte Carlo}
+
+\subsection{Parameter Estimation}
+
+While the Forward Algorithm provides online filtering (inferring states given fixed parameters), the parameters $\theta = (\mu, \sigma, k, \theta, A)$ must themselves be estimated. For complex models, Hamiltonian Monte Carlo (HMC) is the gold standard \cite{neal2011}.
+
+\begin{definition}[Hamiltonian Monte Carlo]
+HMC augments the parameter space with ``momentum'' variables $p$ and simulates Hamiltonian dynamics:
+\begin{align}
+\frac{d\theta}{dt} &= \frac{\partial H}{\partial p} = p \\
+\frac{dp}{dt} &= -\frac{\partial H}{\partial \theta} = \nabla_\theta \ln p(\theta \mid \text{data})
+\end{align}
+where $H(\theta, p) = -\ln p(\theta \mid \text{data}) + \frac{1}{2}p^T p$ is the Hamiltonian.
+\end{definition}
+
+HMC exploits the gradient of the log-posterior to make large, efficient moves through parameter space, avoiding the random-walk behavior of standard Metropolis-Hastings.
+
+\begin{remark}
+In this thesis, we use fixed parameters (estimated from historical data or domain knowledge) for online decision-making, deferring full Bayesian parameter estimation to future work. This pragmatic choice prioritizes real-time performance while acknowledging that HMC would provide more principled uncertainty quantification.
+\end{remark}
+
+\section{Summary}
+
+This chapter has developed the Volatility-Augmented HMM:
+
+\begin{enumerate}
+    \item \textbf{Augmented Observations}: $y_t = [r_t, v_t]$ with Gaussian+Gamma likelihood
+    \item \textbf{KL Divergence Analysis}: Volatility contributes 4.4$\times$ more information than returns
+    \item \textbf{CUSUM Integration}: Change-point detection boosts Bear likelihood during volatility spikes
+    \item \textbf{Log-Space Stability}: Numerically stable implementation for long sequences
+\end{enumerate}
+
+The key theoretical insight is that volatility acts as a ``super-signal'' for regime detection, enabling near-instantaneous detection of market phase transitions.

@@ -1,0 +1,146 @@
+\contentsline {chapter}{Abstract}{iii}{chapter*.1}%
+\contentsline {chapter}{\numberline {1}Introduction}{1}{chapter.1}%
+\contentsline {section}{\numberline {1.1}The St. Petersburg Paradox and the Birth of Decision Theory}{1}{section.1.1}%
+\contentsline {subsection}{\numberline {1.1.1}Bernoulli's Resolution: The Logarithmic Utility}{2}{subsection.1.1.1}%
+\contentsline {subsection}{\numberline {1.1.2}From Bernoulli to Kelly: The Information-Theoretic Connection}{2}{subsection.1.1.2}%
+\contentsline {section}{\numberline {1.2}The Kelly-Ruin Paradox}{3}{section.1.2}%
+\contentsline {subsection}{\numberline {1.2.1}The Volatility of Logarithmic Growth}{3}{subsection.1.2.1}%
+\contentsline {subsection}{\numberline {1.2.2}The Heavy-Tailed Catastrophe}{4}{subsection.1.2.2}%
+\contentsline {subsection}{\numberline {1.2.3}Non-Stationarity: The Regime-Switching Reality}{5}{subsection.1.2.3}%
+\contentsline {section}{\numberline {1.3}Research Questions}{5}{section.1.3}%
+\contentsline {subsection}{\numberline {1.3.1}Question 1: Information Geometry of Regime Detection}{6}{subsection.1.3.1}%
+\contentsline {subsection}{\numberline {1.3.2}Question 2: Stochastic Stability under Infinite Variance}{6}{subsection.1.3.2}%
+\contentsline {subsection}{\numberline {1.3.3}Question 3: The Impossibility Theorem}{7}{subsection.1.3.3}%
+\contentsline {section}{\numberline {1.4}Thesis Overview}{7}{section.1.4}%
+\contentsline {chapter}{\numberline {2}Literature Review}{9}{chapter.2}%
+\contentsline {section}{\numberline {2.1}The Information Theory School}{9}{section.2.1}%
+\contentsline {subsection}{\numberline {2.1.1}Kelly's Original Insight}{9}{subsection.2.1.1}%
+\contentsline {subsection}{\numberline {2.1.2}Breiman's Rigorous Proofs}{10}{subsection.2.1.2}%
+\contentsline {subsection}{\numberline {2.1.3}Thorp's Practical Applications}{11}{subsection.2.1.3}%
+\contentsline {section}{\numberline {2.2}The Economics School: Samuelson's Critique}{11}{section.2.2}%
+\contentsline {subsection}{\numberline {2.2.1}The Fallacy of the Geometric Mean}{11}{subsection.2.2.1}%
+\contentsline {subsection}{\numberline {2.2.2}The Law of Large Numbers Fallacy}{12}{subsection.2.2.2}%
+\contentsline {subsection}{\numberline {2.2.3}The Persistence of Drawdowns}{13}{subsection.2.2.3}%
+\contentsline {section}{\numberline {2.3}Synthesis: Risk-Constrained Kelly}{13}{section.2.3}%
+\contentsline {subsection}{\numberline {2.3.1}The Busseti-Ryu-Boyd Framework}{13}{subsection.2.3.1}%
+\contentsline {subsection}{\numberline {2.3.2}Extensions: CVaR and Multi-Period}{14}{subsection.2.3.2}%
+\contentsline {subsection}{\numberline {2.3.3}Limitations: Stationarity and Gaussianity}{14}{subsection.2.3.3}%
+\contentsline {section}{\numberline {2.4}The Gap: Learning and Risk Management}{15}{section.2.4}%
+\contentsline {section}{\numberline {2.5}Historical Context: The Kelly-Samuelson Debate}{15}{section.2.5}%
+\contentsline {chapter}{\numberline {3}Mathematical Foundations}{17}{chapter.3}%
+\contentsline {section}{\numberline {3.1}The Probability Space and Filtration}{17}{section.3.1}%
+\contentsline {subsection}{\numberline {3.1.1}Formal Setup}{17}{subsection.3.1.1}%
+\contentsline {subsection}{\numberline {3.1.2}The Asset Return Process}{18}{subsection.3.1.2}%
+\contentsline {section}{\numberline {3.2}Heavy-Tailed Distributions and Infinite Variance}{19}{section.3.2}%
+\contentsline {subsection}{\numberline {3.2.1}The Student-$t$ Distribution}{19}{subsection.3.2.1}%
+\contentsline {subsection}{\numberline {3.2.2}Implications for Risk Management}{20}{subsection.3.2.2}%
+\contentsline {section}{\numberline {3.3}Bayesian Inference as a Martingale}{20}{section.3.3}%
+\contentsline {subsection}{\numberline {3.3.1}The Posterior Process}{20}{subsection.3.3.1}%
+\contentsline {section}{\numberline {3.4}Interacting Particle Systems and Phase Transitions}{23}{section.3.4}%
+\contentsline {subsection}{\numberline {3.4.1}Markets as Voter Models}{23}{subsection.3.4.1}%
+\contentsline {subsection}{\numberline {3.4.2}The Ising Model and Herding}{23}{subsection.3.4.2}%
+\contentsline {subsection}{\numberline {3.4.3}Market Crashes as Phase Transitions}{24}{subsection.3.4.3}%
+\contentsline {subsection}{\numberline {3.4.4}The HMM as a Phase Transition Detector}{25}{subsection.3.4.4}%
+\contentsline {section}{\numberline {3.5}Summary}{26}{section.3.5}%
+\contentsline {chapter}{\numberline {4}Methodology}{27}{chapter.4}%
+\contentsline {section}{\numberline {4.1}The Standard HMM for Regime Detection}{27}{section.4.1}%
+\contentsline {subsection}{\numberline {4.1.1}Model Specification}{27}{subsection.4.1.1}%
+\contentsline {subsection}{\numberline {4.1.2}The Forward Algorithm}{28}{subsection.4.1.2}%
+\contentsline {subsection}{\numberline {4.1.3}Limitations of Return-Only Observations}{28}{subsection.4.1.3}%
+\contentsline {section}{\numberline {4.2}Information-Theoretic Analysis}{29}{section.4.2}%
+\contentsline {subsection}{\numberline {4.2.1}The Kullback-Leibler Divergence}{29}{subsection.4.2.1}%
+\contentsline {subsection}{\numberline {4.2.2}KL Divergence for Gaussian Distributions}{29}{subsection.4.2.2}%
+\contentsline {section}{\numberline {4.3}The Volatility-Augmented Observation}{31}{section.4.3}%
+\contentsline {subsection}{\numberline {4.3.1}Augmented Observation Vector}{31}{subsection.4.3.1}%
+\contentsline {subsection}{\numberline {4.3.2}Gamma Distribution for Volatility}{31}{subsection.4.3.2}%
+\contentsline {subsection}{\numberline {4.3.3}KL Divergence for Gamma Distributions}{32}{subsection.4.3.3}%
+\contentsline {subsection}{\numberline {4.3.4}Total Information Gain}{33}{subsection.4.3.4}%
+\contentsline {section}{\numberline {4.4}CUSUM Change-Point Detection}{34}{section.4.4}%
+\contentsline {subsection}{\numberline {4.4.1}The CUSUM Statistic}{34}{subsection.4.4.1}%
+\contentsline {subsection}{\numberline {4.4.2}Integration with HMM}{35}{subsection.4.4.2}%
+\contentsline {section}{\numberline {4.5}Log-Space Implementation}{35}{section.4.5}%
+\contentsline {subsection}{\numberline {4.5.1}Numerical Stability}{35}{subsection.4.5.1}%
+\contentsline {section}{\numberline {4.6}Connection to Hamiltonian Monte Carlo}{36}{section.4.6}%
+\contentsline {subsection}{\numberline {4.6.1}Parameter Estimation}{36}{subsection.4.6.1}%
+\contentsline {section}{\numberline {4.7}Summary}{37}{section.4.7}%
+\contentsline {chapter}{\numberline {5}Risk-Constrained Optimization}{38}{chapter.5}%
+\contentsline {section}{\numberline {5.1}The CPPI Framework}{38}{section.5.1}%
+\contentsline {subsection}{\numberline {5.1.1}Constant Proportion Portfolio Insurance}{38}{subsection.5.1.1}%
+\contentsline {subsection}{\numberline {5.1.2}The CPPI Decision Rule}{39}{subsection.5.1.2}%
+\contentsline {subsection}{\numberline {5.1.3}Continuous-Time Guarantee}{39}{subsection.5.1.3}%
+\contentsline {section}{\numberline {5.2}Gap Risk in Discrete Time}{40}{section.5.2}%
+\contentsline {subsection}{\numberline {5.2.1}The Floor Breach Problem}{40}{subsection.5.2.1}%
+\contentsline {subsection}{\numberline {5.2.2}Gap Risk Under Student-$t$}{41}{subsection.5.2.2}%
+\contentsline {subsection}{\numberline {5.2.3}Mitigating Gap Risk}{41}{subsection.5.2.3}%
+\contentsline {section}{\numberline {5.3}The Impossibility Theorem}{42}{section.5.3}%
+\contentsline {subsection}{\numberline {5.3.1}Statement}{42}{subsection.5.3.1}%
+\contentsline {subsection}{\numberline {5.3.2}Interpretation}{43}{subsection.5.3.2}%
+\contentsline {subsection}{\numberline {5.3.3}The Efficient Frontier of Survival}{44}{subsection.5.3.3}%
+\contentsline {section}{\numberline {5.4}Risk-Constrained Kelly Optimization}{44}{section.5.4}%
+\contentsline {subsection}{\numberline {5.4.1}The Optimization Problem}{44}{subsection.5.4.1}%
+\contentsline {subsection}{\numberline {5.4.2}Heavy-Tailed Complications}{45}{subsection.5.4.2}%
+\contentsline {section}{\numberline {5.5}Integration: The Three-Layer Defense}{45}{section.5.5}%
+\contentsline {section}{\numberline {5.6}Summary}{46}{section.5.6}%
+\contentsline {chapter}{\numberline {6}Results}{47}{chapter.6}%
+\contentsline {section}{\numberline {6.1}Experimental Setup}{47}{section.6.1}%
+\contentsline {subsection}{\numberline {6.1.1}Simulation Architecture}{47}{subsection.6.1.1}%
+\contentsline {subsubsection}{Environment Parameters}{47}{section*.5}%
+\contentsline {subsubsection}{Agent Specifications}{47}{section*.7}%
+\contentsline {subsubsection}{Simulation Protocol}{48}{section*.8}%
+\contentsline {section}{\numberline {6.2}Detection Performance}{48}{section.6.2}%
+\contentsline {subsection}{\numberline {6.2.1}HMM Sensitivity Analysis}{48}{subsection.6.2.1}%
+\contentsline {subsection}{\numberline {6.2.2}The Volatility ``Super-Signal''}{49}{subsection.6.2.2}%
+\contentsline {section}{\numberline {6.3}The Anatomy of a Crash}{50}{section.6.3}%
+\contentsline {subsection}{\numberline {6.3.1}Single-Trajectory Visualization}{50}{subsection.6.3.1}%
+\contentsline {subsubsection}{Timeline Analysis}{50}{section*.11}%
+\contentsline {subsection}{\numberline {6.3.2}Detection Lag Distribution}{51}{subsection.6.3.2}%
+\contentsline {section}{\numberline {6.4}Comparative Performance}{51}{section.6.4}%
+\contentsline {subsection}{\numberline {6.4.1}Student-$t$ Stress Test}{51}{subsection.6.4.1}%
+\contentsline {subsubsection}{Key Findings}{51}{section*.13}%
+\contentsline {subsection}{\numberline {6.4.2}Survival Rates Across Tail Parameters}{52}{subsection.6.4.2}%
+\contentsline {section}{\numberline {6.5}The Efficient Frontier of Survival}{53}{section.6.5}%
+\contentsline {subsection}{\numberline {6.5.1}Visualization}{53}{subsection.6.5.1}%
+\contentsline {subsection}{\numberline {6.5.2}Quantifying the Cost of Survival}{53}{subsection.6.5.2}%
+\contentsline {section}{\numberline {6.6}Robustness Checks}{54}{section.6.6}%
+\contentsline {subsection}{\numberline {6.6.1}Sensitivity to Vol Window Length}{54}{subsection.6.6.1}%
+\contentsline {subsection}{\numberline {6.6.2}Sensitivity to CUSUM Parameters}{54}{subsection.6.6.2}%
+\contentsline {section}{\numberline {6.7}Summary of Experimental Findings}{55}{section.6.7}%
+\contentsline {chapter}{\numberline {7}Conclusion}{56}{chapter.7}%
+\contentsline {section}{\numberline {7.1}Summary of Contributions}{56}{section.7.1}%
+\contentsline {subsection}{\numberline {7.1.1}Theoretical Contributions}{56}{subsection.7.1.1}%
+\contentsline {subsubsection}{1. The Information-Theoretic Foundation}{56}{section*.18}%
+\contentsline {subsubsection}{2. The Martingale Structure}{57}{section*.19}%
+\contentsline {subsubsection}{3. The Impossibility Theorem}{57}{section*.20}%
+\contentsline {subsection}{\numberline {7.1.2}Methodological Contributions}{57}{subsection.7.1.2}%
+\contentsline {subsubsection}{1. The Volatility-Augmented HMM}{57}{section*.21}%
+\contentsline {subsubsection}{2. The Risk-Constrained Kelly Framework}{58}{section*.22}%
+\contentsline {subsubsection}{3. The Three-Layer Architecture}{58}{section*.23}%
+\contentsline {subsection}{\numberline {7.1.3}Empirical Contributions}{58}{subsection.7.1.3}%
+\contentsline {section}{\numberline {7.2}Relation to Prior Work}{59}{section.7.2}%
+\contentsline {section}{\numberline {7.3}Implications for Practice}{59}{section.7.3}%
+\contentsline {subsection}{\numberline {7.3.1}For Portfolio Managers}{59}{subsection.7.3.1}%
+\contentsline {subsection}{\numberline {7.3.2}For Risk Managers}{59}{subsection.7.3.2}%
+\contentsline {section}{\numberline {7.4}Limitations}{60}{section.7.4}%
+\contentsline {subsection}{\numberline {7.4.1}Modeling Assumptions}{60}{subsection.7.4.1}%
+\contentsline {subsection}{\numberline {7.4.2}Computational Limitations}{60}{subsection.7.4.2}%
+\contentsline {section}{\numberline {7.5}Future Work}{61}{section.7.5}%
+\contentsline {subsection}{\numberline {7.5.1}Multi-Asset Extension}{61}{subsection.7.5.1}%
+\contentsline {subsection}{\numberline {7.5.2}Continuous-Time Formulation}{61}{subsection.7.5.2}%
+\contentsline {subsection}{\numberline {7.5.3}Bayesian Parameter Learning}{62}{subsection.7.5.3}%
+\contentsline {subsection}{\numberline {7.5.4}Reinforcement Learning Comparison}{62}{subsection.7.5.4}%
+\contentsline {section}{\numberline {7.6}Concluding Remarks}{62}{section.7.6}%
+\contentsline {chapter}{Kullback-Leibler Divergence Derivations}{66}{appendix*.25}%
+\contentsline {section}{\numberline {.1}Gaussian KL Divergence}{66}{section.Alph0.1}%
+\contentsline {section}{\numberline {.2}Gamma KL Divergence}{67}{section.Alph0.2}%
+\contentsline {section}{\numberline {.3}Numerical Verification}{69}{section.Alph0.3}%
+\contentsline {chapter}{Martingale Proofs}{70}{appendix*.26}%
+\contentsline {section}{\numberline {.4}Preliminary Definitions}{70}{section.Alph0.4}%
+\contentsline {section}{\numberline {.5}Posterior Beliefs as Levy Martingale}{71}{section.Alph0.5}%
+\contentsline {section}{\numberline {.6}Application to HMM Posteriors}{71}{section.Alph0.6}%
+\contentsline {section}{\numberline {.7}The Current-State Posterior}{72}{section.Alph0.7}%
+\contentsline {section}{\numberline {.8}Wealth Process Martingale Properties}{73}{section.Alph0.8}%
+\contentsline {chapter}{Implementation Code}{74}{appendix*.27}%
+\contentsline {section}{\numberline {.9}Volatility-Augmented HMM}{74}{section.Alph0.9}%
+\contentsline {section}{\numberline {.10}Risk-Constrained Kelly Agent}{77}{section.Alph0.10}%
+\contentsline {section}{\numberline {.11}Student-t Environment}{79}{section.Alph0.11}%
+\contentsline {section}{\numberline {.12}Monte Carlo Simulation}{81}{section.Alph0.12}%

@@ -1,0 +1,14 @@
+% Abstract
+
+\chapter*{Abstract}
+\addcontentsline{toc}{chapter}{Abstract}
+
+The Kelly criterion provides the theoretically optimal strategy for maximizing long-term wealth growth in repeated betting scenarios. However, its application in realistic financial markets faces two fundamental challenges: heavy-tailed return distributions with potentially infinite variance, and non-stationary dynamics where market regimes shift abruptly. This thesis demonstrates that naive Kelly betting leads to catastrophic ruin in Student-$t$ environments with degrees of freedom $\nu \leq 4$, where tail events occur far more frequently than Gaussian models predict.
+
+To address these challenges, we develop a unified framework that synthesizes Bayesian inference, stochastic process theory, and constrained optimization. First, we introduce a \textbf{Volatility-Augmented Hidden Markov Model} that incorporates rolling volatility as a supplementary observation, leveraging the insight that volatility spikes provide higher Kullback-Leibler divergence between regimes than returns alone. We derive the KL divergence for both Gaussian and Gamma components, proving that the augmented observation space triples the information gain per time step, thereby reducing regime detection lag from effectively infinite to approximately 1.9 steps.
+
+Second, we implement \textbf{Risk-Constrained Kelly optimization} using a CPPI-like floor protection mechanism that dynamically scales leverage based on distance to a drawdown floor. Monte Carlo simulations demonstrate that this Risk-Constrained agent achieves 100\% survival rate in Student-$t$ environments with $\nu=3$ while maintaining a 0\% maximum drawdown breach rate.
+
+The central theoretical contribution is an \textbf{Impossibility Theorem}: we prove that simultaneous maximization of logarithmic growth rate and boundedness of maximum drawdown is unachievable in infinite-variance environments. The ``cost of survival'' is quantified empirically as approximately 10 percentage points of foregone compound annual growth rate. These results provide a rigorous foundation for sequential decision-making under genuine uncertainty, bridging the historical divide between Kelly's information-theoretic optimality and Samuelson's risk-based critique.
+
+\newpage

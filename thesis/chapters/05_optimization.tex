@@ -1,0 +1,296 @@
+% Chapter 5: Risk-Constrained Optimization
+
+\chapter{Risk-Constrained Optimization}
+\label{ch:optimization}
+
+This chapter formalizes the risk management layer of our framework. We introduce the CPPI constraint mechanism, quantify gap risk in heavy-tailed environments, and prove the central theoretical contribution of this thesis: the Impossibility Theorem.
+
+\section{The CPPI Framework}
+
+\subsection{Constant Proportion Portfolio Insurance}
+
+Constant Proportion Portfolio Insurance (CPPI) was introduced by Black and Jones (1987) as a dynamic strategy for protecting portfolio value while maintaining upside exposure. The key insight is to scale leverage based on distance to a ``floor'' below which wealth must not fall.
+
+\begin{definition}[CPPI Components]
+\begin{itemize}
+    \item \textbf{Floor}: $F_t = (1 - \alpha) \cdot W_{\max,t}$ where $W_{\max,t} = \max_{s \leq t} W_s$
+    \item \textbf{Cushion}: $C_t = W_t - F_t$ (available risk capital)
+    \item \textbf{Multiplier}: $m > 1$ (leverage factor)
+\end{itemize}
+\end{definition}
+
+The drawdown protection level $\alpha$ determines the maximum acceptable loss from peak: an $\alpha = 0.20$ floor guarantees that wealth never falls more than 20\% below its historical maximum.
+
+\subsection{The CPPI Decision Rule}
+
+The betting fraction is scaled by the cushion:
+\begin{equation}
+f_t = \min\left(1, m \cdot \frac{C_t}{W_t}\right) \cdot f^*
+\label{eq:cppi_fraction}
+\end{equation}
+where $f^*$ is the Kelly-optimal fraction.
+
+\begin{proposition}[CPPI Properties]
+\begin{enumerate}
+    \item As $W_t \to F_t$ (approaching floor): $f_t \to 0$ (deleveraging)
+    \item As $C_t \to W_t$ (far from floor): $f_t \to \min(1, m) \cdot f^*$ (full leverage)
+    \item If $m \cdot \alpha \leq 1$: $f_t \leq f^*$ always (conservative)
+\end{enumerate}
+\end{proposition}
+
+\begin{proof}
+When $W_t = F_t$, the cushion $C_t = 0$, so $f_t = 0$.
+
+When $W_t = W_{\max,t}$ (at peak), $C_t = W_t - (1-\alpha)W_t = \alpha W_t$, so:
+\begin{equation}
+\frac{C_t}{W_t} = \alpha \implies f_t = \min(1, m\alpha) \cdot f^*
+\end{equation}
+\end{proof}
+
+\subsection{Continuous-Time Guarantee}
+
+\begin{theorem}[CPPI Guarantee in Continuous Time]
+\label{thm:cppi_continuous}
+In continuous time with continuous sample paths (Geometric Brownian Motion), the CPPI strategy guarantees:
+\begin{equation}
+W_t \geq F_t \quad \text{almost surely for all } t \geq 0
+\end{equation}
+\end{theorem}
+
+\begin{proof}[Proof Sketch]
+In continuous time, wealth evolves as:
+\begin{equation}
+dW_t = f_t W_t (\mu \, dt + \sigma \, dB_t) = m C_t (\mu \, dt + \sigma \, dB_t)
+\end{equation}
+
+The cushion dynamics are:
+\begin{equation}
+dC_t = dW_t - dF_t = m C_t (\mu \, dt + \sigma \, dB_t)
+\end{equation}
+since $F_t$ only increases (ratchet effect).
+
+This is a Geometric Brownian Motion for $C_t$:
+\begin{equation}
+C_t = C_0 \exp\left((m\mu - \tfrac{1}{2}m^2\sigma^2)t + m\sigma B_t\right) > 0
+\end{equation}
+
+Since $C_t > 0$ almost surely, $W_t > F_t$ almost surely.
+\end{proof}
+
+\section{Gap Risk in Discrete Time}
+
+\subsection{The Floor Breach Problem}
+
+The continuous-time guarantee breaks down in discrete time. Between observations, the market can experience a \emph{jump} that breaches the floor before the agent can react.
+
+\begin{definition}[Gap Risk]
+The \textbf{gap risk} is the probability that a single-period loss exceeds the cushion:
+\begin{equation}
+P_{\text{gap}} = \Prob\left(r_t < -\frac{C_t}{m \cdot W_t}\right) = \Prob\left(r_t < -\frac{\alpha}{m}\right)
+\label{eq:gap_risk}
+\end{equation}
+when at peak wealth ($C_t = \alpha W_t$).
+\end{definition}
+
+\subsection{Gap Risk Under Student-$t$}
+
+\begin{proposition}[Gap Risk Quantification]
+\label{prop:gap_risk}
+For Student-$t$ returns with parameters $(\mu, \sigma, \nu)$:
+\begin{equation}
+P_{\text{gap}} = F_{t_\nu}\left(\frac{-\alpha/m - \mu}{\sigma}\right)
+\label{eq:gap_student_t}
+\end{equation}
+where $F_{t_\nu}$ is the Student-$t$ CDF.
+\end{proposition}
+
+\begin{example}[Numerical Calculation]
+With $\alpha = 0.20$, $m = 3$, $\mu = -0.02$ (Bear), $\sigma = 0.20$, $\nu = 3$:
+
+The threshold return is:
+\begin{equation}
+r^* = -\frac{0.20}{3} = -0.067
+\end{equation}
+
+The standardized threshold is:
+\begin{equation}
+z^* = \frac{-0.067 - (-0.02)}{0.20} = \frac{-0.047}{0.20} = -0.235
+\end{equation}
+
+For $t_3$: $F_{t_3}(-0.235) \approx 0.41$
+
+This means there is a \textbf{41\% probability} of breaching the floor in a single Bear-regime period with these parameters!
+\end{example}
+
+\begin{remark}
+The gap risk is much higher under heavy tails than under Gaussian assumptions. For $\nu = 3$, the probability of a 3-sigma event is approximately 10× higher than under Gaussian assumptions.
+\end{remark}
+
+\subsection{Mitigating Gap Risk}
+
+Several strategies reduce gap risk:
+
+\begin{enumerate}
+    \item \textbf{Reduce Multiplier $m$}: Lower leverage reduces both upside and gap risk
+    \item \textbf{Increase Floor $\alpha$}: Larger cushion absorbs more extreme moves
+    \item \textbf{Early Deleveraging}: React to volatility spikes before crashes occur
+\end{enumerate}
+
+The Vol-Augmented HMM contributes to option (3): by detecting the Bear regime \emph{before} catastrophic losses occur, it triggers deleveraging proactively.
+
+\section{The Impossibility Theorem}
+
+\subsection{Statement}
+
+We now prove the central theoretical contribution of this thesis.
+
+\begin{theorem}[Impossibility Theorem]
+\label{thm:impossibility}
+Let $\{r_t\}_{t \geq 1}$ be an i.i.d. sequence of returns with distribution $F$ satisfying:
+\begin{enumerate}
+    \item $\E[r_t] = \mu > 0$ (positive expected return)
+    \item $\Var(r_t) = \infty$ (infinite variance)
+\end{enumerate}
+
+Then for any betting strategy $\{f_t\}$ satisfying $f_t > 0$ eventually almost surely:
+\begin{equation}
+\Prob\left(\sup_{t \geq 1} D_t > \delta\right) = 1 \quad \text{for all } \delta < 1
+\end{equation}
+where $D_t = (W_{\max,t} - W_t)/W_{\max,t}$ is the drawdown at time $t$.
+
+In words: \textbf{arbitrarily large drawdowns occur almost surely}.
+\end{theorem}
+
+\begin{proof}
+Let $f_{\min} = \liminf_{t \to \infty} f_t > 0$ be the asymptotic minimum bet (which exists by assumption).
+
+Consider the single-period return process $R_t = \ln(1 + f_t r_t)$. For small $f_t r_t$:
+\begin{equation}
+R_t \approx f_t r_t - \frac{(f_t r_t)^2}{2}
+\end{equation}
+
+Since $\Var(r_t) = \infty$, we have $\Var(f_t r_t) = \infty$ for any $f_t > 0$.
+
+By the generalized central limit theorem (Gnedenko-Kolmogorov), the partial sums:
+\begin{equation}
+S_n = \sum_{t=1}^n R_t
+\end{equation}
+converge to an $\alpha$-stable distribution with $\alpha < 2$.
+
+For stable distributions with $\alpha < 2$, the range of fluctuations is unbounded:
+\begin{equation}
+\limsup_{n \to \infty} S_n - \liminf_{n \to \infty} S_n = \infty \quad \text{a.s.}
+\end{equation}
+
+This implies:
+\begin{equation}
+\limsup_{t \to \infty} D_t = 1 \quad \text{a.s.}
+\end{equation}
+
+Therefore, $\Prob(\sup_t D_t > \delta) = 1$ for all $\delta < 1$.
+\end{proof}
+
+\begin{corollary}[Growth-Safety Trade-off]
+To guarantee $\Prob(D_t > \delta) = 0$, we must have $f_t = 0$ eventually --- i.e., stop betting entirely. Any positive betting fraction incurs unbounded drawdown risk.
+\end{corollary}
+
+\subsection{Interpretation}
+
+The Impossibility Theorem formalizes the fundamental tension between growth and safety:
+
+\begin{itemize}
+    \item \textbf{Maximum Growth}: Requires $f_t = f^* = \mu/\sigma^2$ (Kelly fraction), but this is undefined when $\sigma^2 = \infty$
+    
+    \item \textbf{Bounded Drawdowns}: Requires $f_t \to 0$, sacrificing all growth
+    
+    \item \textbf{Trade-off}: Any intermediate strategy sacrifices growth for partial drawdown protection
+\end{itemize}
+
+\subsection{The Efficient Frontier of Survival}
+
+\begin{definition}[Efficient Frontier]
+The \textbf{efficient frontier} is the curve mapping:
+\begin{equation}
+\mathcal{E} = \{(D^*, g^*) : \text{no strategy achieves higher } g \text{ for given } D, \text{ or lower } D \text{ for given } g\}
+\end{equation}
+where $D$ is the 95th-percentile maximum drawdown and $g$ is the median log-growth rate.
+\end{definition}
+
+This curve is:
+\begin{itemize}
+    \item \textbf{Concave}: Diminishing returns to risk-taking beyond a point
+    \item \textbf{Bounded}: Cannot reach $(0, g^*)$ --- the ``Ideal Point'' is unattainable
+    \item \textbf{Monotonic}: Higher allowed drawdown permits higher growth
+\end{itemize}
+
+The ``Cost of Survival'' is quantified as the growth rate sacrificed to achieve bounded drawdowns:
+\begin{equation}
+\text{Cost} = g^*_{\text{unconstrained}} - g_{\text{constrained}}(\delta)
+\end{equation}
+
+\section{Risk-Constrained Kelly Optimization}
+
+\subsection{The Optimization Problem}
+
+Following Busseti, Ryu, and Boyd \cite{busseti2016}, we formulate:
+\begin{equation}
+\begin{aligned}
+& \maximize_f && \E[\ln(1 + f \cdot r)] \\
+& \text{subject to} && \text{CVaR}_\beta(f \cdot r) \geq -L
+\end{aligned}
+\label{eq:cvar_kelly}
+\end{equation}
+where CVaR (Conditional Value-at-Risk) is:
+\begin{equation}
+\text{CVaR}_\beta(X) = \E[X \mid X \leq \text{VaR}_\beta(X)]
+\end{equation}
+
+\subsection{Heavy-Tailed Complications}
+
+For Gaussian returns, this problem is convex and efficiently solvable. For heavy-tailed returns:
+\begin{enumerate}
+    \item CVaR may be infinite if the left tail decays too slowly
+    \item The constraint set may be non-convex
+    \item Standard optimization algorithms may fail
+\end{enumerate}
+
+Our CPPI approach sidesteps these difficulties by enforcing constraints dynamically rather than through static optimization.
+
+\section{Integration: The Three-Layer Defense}
+
+The complete framework integrates three layers:
+
+\begin{enumerate}
+    \item \textbf{Detection Layer (HMM)}: Infers regime from returns and volatility
+    \item \textbf{Decision Layer (Kelly)}: Computes optimal bet given regime probabilities
+    \item \textbf{Protection Layer (CPPI)}: Enforces drawdown floor as last resort
+\end{enumerate}
+
+\begin{algorithm}[H]
+\caption{Complete Risk-Constrained Bayesian Agent}
+\label{alg:complete_agent}
+\begin{algorithmic}[1]
+\STATE \textbf{Input:} Return $r_t$, volatility $v_t$, wealth $W_t$, peak $W_{\max}$
+\STATE Update HMM posterior: $\pi_t = P(\text{Bull} \mid r_{1:t}, v_{1:t})$
+\STATE Compute regime-weighted Kelly: $f^*_t = \pi_t f^*_{\text{Bull}} + (1-\pi_t) f^*_{\text{Bear}}$
+\STATE Compute cushion: $C_t = W_t - (1-\alpha)W_{\max}$
+\STATE Apply CPPI constraint: $f_t = \min(f^*_t, m \cdot C_t / W_t)$
+\STATE Execute trade with fraction $f_t$
+\STATE Update peak: $W_{\max} \leftarrow \max(W_{\max}, W_t)$
+\RETURN $f_t$
+\end{algorithmic}
+\end{algorithm}
+
+\section{Summary}
+
+This chapter has established:
+
+\begin{enumerate}
+    \item The CPPI mechanism for dynamic drawdown protection
+    \item Gap risk quantification under Student-$t$ tails
+    \item The \textbf{Impossibility Theorem}: growth and safety cannot be simultaneously optimized in infinite-variance environments
+    \item The \textbf{Efficient Frontier of Survival}: the quantitative trade-off curve
+    \item The three-layer integration of detection, decision, and protection
+\end{enumerate}
+
+The Impossibility Theorem is the central theoretical contribution of this thesis, formalizing the ``cost of survival'' that has been heuristically understood by practitioners.

@@ -1,0 +1,188 @@
+% Chapter 1: Introduction - The Paradox of Growth and Ruin
+
+\chapter{Introduction}
+\label{ch:introduction}
+
+\section{The St. Petersburg Paradox and the Birth of Decision Theory}
+
+In 1713, Nicolas Bernoulli proposed a deceptively simple game that would puzzle mathematicians for centuries. A fair coin is tossed repeatedly until the first ``heads'' appears. If this occurs on the $n$-th toss, the player receives $2^n$ ducats. What is a fair price to enter this game?
+
+The expected payoff is straightforward to compute:
+\begin{equation}
+\E[X] = \sum_{n=1}^{\infty} 2^n \cdot \left(\frac{1}{2}\right)^n = \sum_{n=1}^{\infty} 1 = \infty
+\label{eq:st_petersburg}
+\end{equation}
+
+Standard decision theory, which prescribes maximizing expected value, implies that a rational agent should pay \emph{any finite amount} to play this game. Yet no reasonable person would pay more than a few ducats. This contradiction --- infinite expected value but finite acceptable price --- became known as the \textbf{St. Petersburg Paradox}.
+
+\subsection{Bernoulli's Resolution: The Logarithmic Utility}
+
+Daniel Bernoulli, cousin to Nicolas, proposed a resolution in 1738 that would become the cornerstone of modern utility theory \cite{bernoulli1738}. He argued that people do not maximize expected \emph{wealth} but rather expected \emph{utility of wealth}. Specifically, he proposed the logarithmic utility function:
+\begin{equation}
+U(W) = \ln W
+\label{eq:log_utility}
+\end{equation}
+
+Under this specification, the expected utility of the St. Petersburg game becomes:
+\begin{equation}
+\E[U(X)] = \sum_{n=1}^{\infty} \ln(2^n) \cdot \left(\frac{1}{2}\right)^n = \ln 2 \sum_{n=1}^{\infty} \frac{n}{2^n} = 2\ln 2 \approx 1.39
+\end{equation}
+
+This finite value resolves the paradox. An agent with initial wealth $W_0$ should pay at most $e^{2\ln 2} \approx 4$ ducats --- a reasonable amount that matches intuition.
+
+\subsection{From Bernoulli to Kelly: The Information-Theoretic Connection}
+
+Two centuries later, John L. Kelly Jr., a researcher at Bell Laboratories, rediscovered Bernoulli's insight from an entirely different angle \cite{kelly1956}. Working on the problem of gambling with inside information (a noisy ``private wire'' transmitting horse race results), Kelly proved a remarkable equivalence:
+
+\begin{theorem}[Kelly, 1956]
+Maximizing the expected logarithm of wealth is equivalent to maximizing the asymptotic growth rate:
+\begin{equation}
+f^* = \argmax_f \E[\ln(1 + fr)] = \argmax_f \lim_{T \to \infty} \frac{1}{T} \ln \frac{W_T}{W_0}
+\label{eq:kelly_equivalence}
+\end{equation}
+\end{theorem}
+
+This result, now called the \textbf{Kelly Criterion}, provides a prescription for the optimal betting fraction in any repeated game. For a simple bet with probability $p$ of winning and odds $b:1$, the Kelly fraction is:
+\begin{equation}
+f^* = \frac{bp - (1-p)}{b} = \frac{\text{edge}}{\text{odds}}
+\label{eq:kelly_fraction}
+\end{equation}
+
+The elegance of this formula disguises a profound insight: the gambler who maximizes logarithmic growth will, almost surely, accumulate more wealth than any other strategy as time approaches infinity \cite{breiman1961}.
+
+\section{The Kelly-Ruin Paradox}
+
+Despite its theoretical optimality, the Kelly criterion harbors a dangerous secret. The very strategy that guarantees the fastest $\emph{asymptotic}$ growth also exposes the agent to the largest $\emph{finite-time}$ drawdowns.
+
+\subsection{The Volatility of Logarithmic Growth}
+
+Consider an agent betting a fraction $f$ of wealth on an asset with expected return $\mu$ and volatility $\sigma$. The single-period wealth evolution is:
+\begin{equation}
+W_{t+1} = W_t(1 + fr_t)
+\end{equation}
+
+Taking logarithms and summing over $T$ periods:
+\begin{equation}
+\ln W_T = \ln W_0 + \sum_{t=1}^{T} \ln(1 + fr_t)
+\end{equation}
+
+For small $fr_t$, a Taylor expansion yields:
+\begin{equation}
+\ln(1 + fr_t) \approx fr_t - \frac{(fr_t)^2}{2}
+\end{equation}
+
+Thus the expected log-growth per period is approximately:
+\begin{equation}
+g(f) = \E[\ln(1 + fr)] \approx f\mu - \frac{f^2\sigma^2}{2}
+\label{eq:growth_rate}
+\end{equation}
+
+Maximizing over $f$ yields the celebrated result:
+\begin{equation}
+f^* = \frac{\mu}{\sigma^2}
+\label{eq:kelly_optimal}
+\end{equation}
+
+\subsection{The Heavy-Tailed Catastrophe}
+
+The formula \eqref{eq:kelly_optimal} contains a hidden assumption: the variance $\sigma^2$ must be \emph{finite}. In Gaussian markets, this is automatically satisfied. But empirical evidence, beginning with Mandelbrot's analysis of cotton prices \cite{mandelbrot1963} and formalized by Cont \cite{cont2001}, demonstrates that real financial returns exhibit \textbf{heavy tails} --- extreme events occur far more frequently than Gaussian models predict.
+
+The Student-$t$ distribution provides a tractable model for heavy-tailed returns:
+\begin{equation}
+f_{t_\nu}(x) = \frac{\Gamma\left(\frac{\nu+1}{2}\right)}{\sqrt{\nu\pi}\,\Gamma\left(\frac{\nu}{2}\right)} \left(1 + \frac{x^2}{\nu}\right)^{-\frac{\nu+1}{2}}
+\label{eq:student_t}
+\end{equation}
+
+The parameter $\nu$ (``degrees of freedom'') controls the tail heaviness. Critically:
+\begin{equation}
+\Var(X) = \begin{cases}
+\frac{\nu}{\nu - 2}\sigma^2 & \text{if } \nu > 2 \\
+\infty & \text{if } \nu \leq 2
+\end{cases}
+\label{eq:student_t_variance}
+\end{equation}
+
+When $\nu \leq 2$, the variance is infinite. When $\nu \leq 4$, the kurtosis diverges. In either case, the Kelly fraction $f^* = \mu/\sigma^2$ becomes undefined or approaches zero --- yet any nonzero betting fraction exposes the agent to unbounded drawdown risk.
+
+\begin{remark}
+Empirical studies suggest that daily equity returns correspond to $\nu \approx 3$--$5$ \cite{cont2001}, placing realistic markets squarely in the heavy-tailed regime where standard risk metrics like the Sharpe ratio lose their validity.
+\end{remark}
+
+\subsection{Non-Stationarity: The Regime-Switching Reality}
+
+Heavy tails are not the only challenge. Financial markets are \emph{non-stationary} --- the parameters $(\mu, \sigma)$ themselves change over time. Bull markets are characterized by positive drift and low volatility; bear markets by negative drift and high volatility. These regime shifts can be sudden and dramatic, as witnessed during the 2008 financial crisis and the March 2020 COVID crash.
+
+We model this non-stationarity through a \textbf{regime-switching process}:
+\begin{equation}
+r_t = \mu_{S_t} + \sigma_{S_t} \cdot \epsilon_t, \quad \epsilon_t \sim t_\nu
+\label{eq:regime_switching}
+\end{equation}
+where $S_t \in \{\text{Bull}, \text{Bear}\}$ is a latent Markov chain with transition matrix:
+\begin{equation}
+A = \begin{pmatrix}
+1 - \alpha & \alpha \\
+\beta & 1 - \beta
+\end{pmatrix}
+\label{eq:transition_matrix}
+\end{equation}
+
+The agent observes only the returns $r_t$, not the hidden state $S_t$. This creates a fundamental \textbf{learning problem}: how to infer the current regime from noisy observations and adapt the betting strategy accordingly.
+
+\section{Research Questions}
+
+This thesis addresses three interconnected questions that together constitute a unified framework for sequential decision-making under uncertainty:
+
+\subsection{Question 1: Information Geometry of Regime Detection}
+
+\begin{quote}
+\emph{Does augmenting the observation space of a Hidden Markov Model with rolling volatility significantly increase the Kullback-Leibler divergence between regime distributions, thereby reducing detection latency?}
+\end{quote}
+
+Standard HMMs use only returns $r_t$ to infer the hidden state. We hypothesize that incorporating rolling volatility $v_t$ as a supplementary observation --- creating a bivariate observation $y_t = [r_t, v_t]$ --- provides a ``super-signal'' that dramatically accelerates regime detection.
+
+The theoretical foundation for this hypothesis lies in information geometry: the Kullback-Leibler (KL) divergence $\KL(P_{\text{Bull}} \| P_{\text{Bear}})$ measures the ``distance'' between distributions. A larger KL divergence implies easier discrimination, hence faster detection. We will derive the KL divergence for both the Gaussian (returns) and Gamma (volatility) components and demonstrate that volatility augmentation approximately triples the information gain per observation.
+
+\subsection{Question 2: Stochastic Stability under Infinite Variance}
+
+\begin{quote}
+\emph{Can a CPPI-based constraint mechanism theoretically guarantee survival (probability of ruin $= 0$) in discrete-time markets with infinite variance?}
+\end{quote}
+
+Constant Proportion Portfolio Insurance (CPPI) provides a mechanism for enforcing drawdown constraints through dynamic leverage adjustment. By defining a ``floor'' $F_t$ below which wealth must not fall and scaling bets proportionally to the ``cushion'' $C_t = W_t - F_t$, the agent can theoretically prevent ruin.
+
+However, the guarantee is exact only in continuous time with continuous paths. In discrete time with heavy-tailed jumps, ``gap risk'' emerges: a single extreme return can breach the floor before the agent can react. We quantify this gap risk using the Student-$t$ cumulative distribution function and establish bounds on the survival probability.
+
+\subsection{Question 3: The Impossibility Theorem}
+
+\begin{quote}
+\emph{Is there a fundamental, quantifiable trade-off that makes it impossible to simultaneously maximize logarithmic growth and bound the maximum drawdown in heavy-tailed environments?}
+\end{quote}
+
+This question constitutes the central theoretical contribution of the thesis. We conjecture --- and will prove --- an \textbf{Impossibility Theorem}:
+
+\begin{theorem}[Impossibility Theorem --- Informal Statement]
+In a market characterized by infinite-variance innovations, it is impossible to simultaneously:
+\begin{enumerate}
+    \item Maximize the asymptotic logarithmic growth rate $g^* = \max_f g(f)$
+    \item Guarantee a bounded maximum drawdown $D_{\max} < \delta$ with probability 1
+\end{enumerate}
+Any strategy that achieves bounded drawdowns must sacrifice a positive fraction of the maximum growth rate. This trade-off is not a failure of optimization but a mathematical necessity.
+\end{theorem}
+
+The ``Efficient Frontier of Survival'' --- the curve mapping maximum achievable growth rate as a function of allowed drawdown risk --- provides a quantitative characterization of this fundamental constraint.
+
+\section{Thesis Overview}
+
+The remainder of this thesis is organized as follows:
+
+\textbf{Chapter 2: Literature Review} surveys the historical development of the Kelly criterion, the Samuelson-Kelly debate on logarithmic utility, and modern risk-constrained optimization approaches.
+
+\textbf{Chapter 3: Mathematical Foundations} rigorously defines the probability space and filtration, proves the martingale properties of Bayesian posteriors, and draws connections to interacting particle systems and phase transitions.
+
+\textbf{Chapter 4: Methodology} presents the Volatility-Augmented HMM, derives the Kullback-Leibler divergence for the augmented observation space, and describes the computational algorithms for online inference.
+
+\textbf{Chapter 5: Risk-Constrained Optimization} formalizes the CPPI mechanism, quantifies gap risk, and proves the Impossibility Theorem.
+
+\textbf{Chapter 6: Results} presents Monte Carlo simulation evidence, including the ``Anatomy of a Crash'' analysis and the Efficient Frontier of Survival.
+
+\textbf{Chapter 7: Conclusion} synthesizes contributions and outlines directions for future research.

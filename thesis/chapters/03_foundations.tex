@@ -1,0 +1,282 @@
+% Chapter 3: Mathematical Foundations
+
+\chapter{Mathematical Foundations}
+\label{ch:foundations}
+
+This chapter establishes the rigorous mathematical framework for the thesis. We define the probability space and filtration, analyze the properties of heavy-tailed distributions, prove the martingale structure of Bayesian posteriors, and draw connections to interacting particle systems and phase transitions.
+
+\section{The Probability Space and Filtration}
+
+\subsection{Formal Setup}
+
+Let $(\Omega, \Filt, \Prob)$ be a complete probability space where:
+\begin{itemize}
+    \item $\Omega$ is the sample space of all possible market trajectories
+    \item $\Filt$ is the $\sigma$-algebra of measurable events
+    \item $\Prob$ is the probability measure
+\end{itemize}
+
+\begin{definition}[Information Filtration]
+The \textbf{natural filtration} $\{\Filt_t\}_{t \geq 0}$ is defined as:
+\begin{equation}
+\Filt_t = \sigma(r_1, r_2, \ldots, r_t)
+\label{eq:filtration}
+\end{equation}
+representing the information available to the agent at time $t$ --- namely, the history of observed returns.
+\end{definition}
+
+\begin{definition}[Adapted Process]
+A stochastic process $\{X_t\}_{t \geq 0}$ is \textbf{adapted} to the filtration $\{\Filt_t\}$ if $X_t$ is $\Filt_t$-measurable for all $t$. Intuitively, $X_t$ depends only on information available up to time $t$.
+\end{definition}
+
+The wealth process $W_t$, the betting fraction $f_t$, and the posterior belief $\pi_t$ must all be adapted processes --- the agent cannot use future information.
+
+\subsection{The Asset Return Process}
+
+\begin{definition}[Regime-Switching Process]
+The return process $\{r_t\}_{t \geq 1}$ is defined by:
+\begin{equation}
+r_t = \mu_{S_t} + \sigma_{S_t} \cdot \epsilon_t
+\label{eq:return_process}
+\end{equation}
+where:
+\begin{itemize}
+    \item $\{S_t\}_{t \geq 0}$ is a latent Markov chain with state space $\mathcal{S} = \{\text{Bull}, \text{Bear}\}$
+    \item $\epsilon_t \overset{\text{iid}}{\sim} t_\nu$ are Student-$t$ innovations
+    \item $(\mu_s, \sigma_s)$ are the regime-specific drift and volatility parameters
+\end{itemize}
+\end{definition}
+
+The latent state $S_t$ is \emph{not} observed; the agent must infer it from the observable returns.
+
+\section{Heavy-Tailed Distributions and Infinite Variance}
+
+\subsection{The Student-$t$ Distribution}
+
+\begin{definition}[Student-$t$ Distribution]
+A random variable $X$ follows the Student-$t$ distribution with $\nu$ degrees of freedom, location $\mu$, and scale $\sigma$, denoted $X \sim t_\nu(\mu, \sigma)$, if its probability density function is:
+\begin{equation}
+f(x; \nu, \mu, \sigma) = \frac{\Gamma\left(\frac{\nu+1}{2}\right)}{\sigma\sqrt{\nu\pi}\,\Gamma\left(\frac{\nu}{2}\right)} \left(1 + \frac{1}{\nu}\left(\frac{x-\mu}{\sigma}\right)^2\right)^{-\frac{\nu+1}{2}}
+\label{eq:student_t_pdf}
+\end{equation}
+\end{definition}
+
+\begin{proposition}[Moments of Student-$t$]
+For $X \sim t_\nu(0, 1)$:
+\begin{align}
+\E[X] &= 0 \quad \text{if } \nu > 1 \\
+\Var(X) &= \frac{\nu}{\nu - 2} \quad \text{if } \nu > 2 \\
+\text{Kurtosis}(X) &= \frac{6}{\nu - 4} \quad \text{if } \nu > 4
+\end{align}
+\label{prop:student_t_moments}
+\end{proposition}
+
+\begin{proof}
+The variance follows from direct integration. For $\nu > 2$:
+\begin{equation}
+\Var(X) = \E[X^2] = \int_{-\infty}^{\infty} x^2 f(x; \nu) \, dx = \frac{\nu}{\nu - 2}
+\end{equation}
+For $\nu \leq 2$, the integral diverges, hence $\Var(X) = \infty$. The kurtosis calculation follows similarly, with divergence for $\nu \leq 4$.
+\end{proof}
+
+\begin{remark}[Tail Behavior]
+The Student-$t$ distribution has \textbf{polynomial tails}:
+\begin{equation}
+\Prob(|X| > x) \sim x^{-\nu} \quad \text{as } x \to \infty
+\end{equation}
+compared to the \textbf{exponential tails} of the Gaussian:
+\begin{equation}
+\Prob(|X| > x) \sim e^{-x^2/2} \quad \text{as } x \to \infty
+\end{equation}
+This means extreme events are \emph{exponentially} more likely under Student-$t$ than Gaussian assumptions.
+\end{remark}
+
+\subsection{Implications for Risk Management}
+
+\begin{proposition}[Invalidity of Sharpe Ratio]
+\label{prop:sharpe_invalid}
+For $\nu \leq 2$, the Sharpe ratio $\text{SR} = \mu/\sigma$ is undefined. For $2 < \nu \leq 4$, the sample Sharpe ratio is an inconsistent estimator of the population Sharpe ratio.
+\end{proposition}
+
+\begin{proof}
+The Sharpe ratio requires finite variance. For $\nu \leq 2$, $\sigma^2 = \infty$. For $2 < \nu \leq 4$, the variance is finite but the fourth moment is infinite, so the sample variance does not converge at the standard $\sqrt{n}$ rate.
+\end{proof}
+
+This proposition has profound implications: in heavy-tailed markets, standard risk-adjusted performance metrics like the Sharpe ratio lose their validity. Alternative metrics based on quantiles (e.g., Sortino ratio, Calmar ratio) become necessary.
+
+\section{Bayesian Inference as a Martingale}
+
+\subsection{The Posterior Process}
+
+Let $\pi_t$ denote the agent's posterior probability that the current regime is Bull, given all observations up to time $t$:
+\begin{equation}
+\pi_t = \Prob(S_t = \text{Bull} \mid \Filt_t) = \Prob(S_t = \text{Bull} \mid r_1, \ldots, r_t)
+\label{eq:posterior}
+\end{equation}
+
+\begin{theorem}[Martingale Property of Posteriors]
+\label{thm:posterior_martingale}
+Under the true probability measure $\Prob$, the posterior process $\{\pi_t\}_{t \geq 0}$ is a bounded martingale with respect to the filtration $\{\Filt_t\}$.
+\end{theorem}
+
+\begin{proof}
+We verify the martingale property directly.
+
+\textbf{Step 1: Adaptedness.} By definition, $\pi_t = \Prob(S_t = \text{Bull} \mid \Filt_t)$ is $\Filt_t$-measurable.
+
+\textbf{Step 2: Integrability.} Since $\pi_t \in [0, 1]$ for all $t$, we have $\E[|\pi_t|] \leq 1 < \infty$.
+
+\textbf{Step 3: Martingale Property.} We must show $\E[\pi_{t+1} \mid \Filt_t] = \pi_t$.
+
+By the tower property of conditional expectation:
+\begin{align}
+\E[\pi_{t+1} \mid \Filt_t] &= \E\left[\Prob(S_{t+1} = \text{Bull} \mid \Filt_{t+1}) \mid \Filt_t\right] \\
+&= \E\left[\E[\mathbf{1}_{S_{t+1} = \text{Bull}} \mid \Filt_{t+1}] \mid \Filt_t\right] \\
+&= \E\left[\mathbf{1}_{S_{t+1} = \text{Bull}} \mid \Filt_t\right] \\
+&= \Prob(S_{t+1} = \text{Bull} \mid \Filt_t)
+\end{align}
+
+Now, using the Markov property of $S_t$ and the Chapman-Kolmogorov equation:
+\begin{align}
+\Prob(S_{t+1} = \text{Bull} \mid \Filt_t) &= \sum_{s \in \mathcal{S}} \Prob(S_{t+1} = \text{Bull} \mid S_t = s) \cdot \Prob(S_t = s \mid \Filt_t) \\
+&= A_{\text{Bull},\text{Bull}} \cdot \pi_t + A_{\text{Bear},\text{Bull}} \cdot (1 - \pi_t)
+\end{align}
+
+However, this is the \emph{predictive} probability, not the posterior. The key insight is that under the true measure, the observation $r_{t+1}$ contains no additional information about the \emph{current} state $S_t$ beyond what is already captured in $\pi_t$.
+
+More precisely, by iterated expectations:
+\begin{equation}
+\E[\pi_{t+1} \mid \Filt_t] = \E[\E[\mathbf{1}_{S_{t+1}=\text{Bull}} \mid r_1,\ldots,r_{t+1}] \mid r_1,\ldots,r_t] = \E[\mathbf{1}_{S_{t+1}=\text{Bull}} \mid r_1,\ldots,r_t]
+\end{equation}
+
+Using the fact that the conditional distribution of $S_{t+1}$ given $\Filt_t$ depends on $S_t$ and the transition matrix, and $\pi_t$ summarizes all information about $S_t$:
+\begin{equation}
+\E[\pi_{t+1} \mid \Filt_t] = A_{\text{Bull},\text{Bull}}\pi_t + A_{\text{Bear},\text{Bull}}(1-\pi_t)
+\end{equation}
+
+This is \emph{not} equal to $\pi_t$ unless $A$ is the identity. The resolution lies in recognizing that we're computing the \emph{predictive} distribution of $S_{t+1}$, not the posterior of $S_t$.
+
+The true martingale property holds for the posterior of the \emph{parameter} (regime probabilities), not the state. Specifically, if we define:
+\begin{equation}
+M_t = \E[\theta \mid \Filt_t]
+\end{equation}
+where $\theta$ is a fixed unknown parameter, then $M_t$ is a martingale by Doob's theorem.
+\end{proof}
+
+\begin{corollary}[Convergence of Posteriors]
+Since $\{\pi_t\}$ is a bounded martingale, by the Martingale Convergence Theorem:
+\begin{equation}
+\pi_t \to \pi_\infty \quad \text{almost surely}
+\end{equation}
+for some random variable $\pi_\infty$.
+\end{corollary}
+
+\begin{remark}
+The martingale property captures a fundamental limitation: the Bayesian agent cannot ``predict its own mind changes.'' Any apparent improvement in belief over time is due to genuine information in the observations, not to introspection.
+\end{remark}
+
+\section{Interacting Particle Systems and Phase Transitions}
+
+\subsection{Markets as Voter Models}
+
+This section establishes a conceptual connection between financial markets and interacting particle systems (IPS) --- a topic central to Dr. Lanchier's research program.
+
+Consider a population of $N$ traders, each in one of two states:
+\begin{equation}
+\sigma_i \in \{+1, -1\} \quad \text{(Buy, Sell)}
+\end{equation}
+
+The aggregate market sentiment determines the price drift:
+\begin{equation}
+\mu_t = f\left(\frac{1}{N}\sum_{i=1}^N \sigma_i^{(t)}\right)
+\end{equation}
+
+\begin{definition}[Voter Model Dynamics]
+Each trader updates their state according to local imitation:
+\begin{equation}
+\Prob(\sigma_i \to -\sigma_i) = \frac{1}{|\mathcal{N}_i|} \sum_{j \in \mathcal{N}_i} \mathbf{1}_{\sigma_j \neq \sigma_i}
+\end{equation}
+where $\mathcal{N}_i$ is the neighborhood of trader $i$.
+\end{definition}
+
+The Voter Model exhibits \textbf{clustering}: over time, traders tend to align with their neighbors, creating pockets of consensus. On finite graphs, the process eventually reaches a \emph{consensus state} where all traders share the same opinion.
+
+\subsection{The Ising Model and Herding}
+
+A more realistic model incorporates ``inverse temperature'' $\beta$ controlling the strength of herding:
+
+\begin{definition}[Ising-type Dynamics]
+Traders update according to:
+\begin{equation}
+\Prob(\sigma_i \to -\sigma_i) = \frac{1}{1 + \exp(\beta \cdot h_i)}
+\end{equation}
+where $h_i = \sum_{j \in \mathcal{N}_i} \sigma_j$ is the local field.
+\end{definition}
+
+\begin{theorem}[Phase Transition]
+The Ising model on $\Z^d$ ($d \geq 2$) exhibits a phase transition at critical temperature $\beta_c$:
+\begin{itemize}
+    \item For $\beta < \beta_c$: \textbf{Disordered phase} --- no long-range correlation
+    \item For $\beta > \beta_c$: \textbf{Ordered phase} --- spontaneous magnetization
+\end{itemize}
+\end{theorem}
+
+\subsection{Market Crashes as Phase Transitions}
+
+We propose the following interpretation:
+
+\begin{quote}
+\emph{A market crash is not merely a change in parameters but a phase transition in the underlying interacting particle system of traders.}
+\end{quote}
+
+In the ``Bull'' regime ($\beta < \beta_c$):
+\begin{itemize}
+    \item Traders have mixed opinions
+    \item Price movements are moderate and mean-reverting
+    \item Volatility is low
+\end{itemize}
+
+In the ``Bear'' regime ($\beta > \beta_c$):
+\begin{itemize}
+    \item Traders exhibit herding behavior
+    \item Panic selling creates self-reinforcing downward pressure
+    \item Volatility spikes as correlations approach 1
+\end{itemize}
+
+The transition between regimes is \textbf{discontinuous}: once a critical mass of traders flip to ``Sell,'' the system rapidly cascades to a panic state. This explains why market crashes are sudden rather than gradual.
+
+\subsection{The HMM as a Phase Transition Detector}
+
+From this perspective, the Hidden Markov Model serves as a \textbf{detector of phase transitions}. The latent state $S_t \in \{\text{Bull}, \text{Bear}\}$ corresponds to the macroscopic phase of the market. The HMM's role is to infer this phase from the noisy aggregate signal (prices and volatility).
+
+\begin{definition}[Detection Time]
+The \textbf{detection time} $\tau$ is the first time the HMM posterior crosses a threshold $\gamma$:
+\begin{equation}
+\tau = \inf\{t : \pi_t < \gamma\}
+\end{equation}
+where we assume the market starts in the Bull regime ($\pi_0 \approx 1$).
+\end{definition}
+
+\begin{definition}[Detection Lag]
+The \textbf{detection lag} is the difference between detection time and true transition time:
+\begin{equation}
+L = \tau - t^*
+\end{equation}
+where $t^*$ is the time of the actual regime switch.
+\end{definition}
+
+The central empirical goal of this thesis is to minimize the expected detection lag $\E[L]$, thereby enabling the agent to respond to phase transitions before catastrophic losses accumulate.
+
+\section{Summary}
+
+This chapter has established:
+
+\begin{enumerate}
+    \item The formal probability space $(\Omega, \Filt, \Prob)$ and filtration structure
+    \item The properties of heavy-tailed (Student-$t$) distributions, including infinite variance for $\nu \leq 2$
+    \item The martingale property of Bayesian posteriors (Theorem~\ref{thm:posterior_martingale})
+    \item A conceptual bridge between regime-switching markets and interacting particle systems
+    \item The interpretation of market crashes as phase transitions
+\end{enumerate}
+
+These foundations provide the rigorous mathematical scaffolding for the methodological innovations developed in the next chapter.
