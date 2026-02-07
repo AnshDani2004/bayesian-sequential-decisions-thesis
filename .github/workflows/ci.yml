@@ -38,10 +38,11 @@ jobs:
       
       - name: Verify determinism
         run: |
-          # Run twice with same seed, outputs should be identical
-          python examples/run_phase1.py --smoke --seed 42 > /tmp/run1.txt 2>&1
-          python examples/run_phase1.py --smoke --seed 42 > /tmp/run2.txt 2>&1
-          diff /tmp/run1.txt /tmp/run2.txt || (echo "Non-determinism detected!" && exit 1)
+          # Run twice with same seed, compare statistical outputs only (exclude timestamps)
+          python examples/run_phase1.py --smoke --seed 42 2>&1 | grep -E "(Median|Mean|Std|Survival|Ruin)" > /tmp/run1.txt
+          python examples/run_phase1.py --smoke --seed 42 2>&1 | grep -E "(Median|Mean|Std|Survival|Ruin)" > /tmp/run2.txt
+          diff /tmp/run1.txt /tmp/run2.txt || (echo "Non-determinism detected in statistical outputs!" && exit 1)
+          echo "Determinism verified: statistical outputs match"
 
   lint:
     runs-on: ubuntu-latest
