@@ -604,8 +604,227 @@ class ConvexRiskAgent(BaseAgent):
 
 
 # =============================================================================
+# HMMKellyAgent: Regime-Switching Detection
+# =============================================================================
+
+class HMMKellyAgent(BaseAgent):
+    """
+    Agent that detects regime switches using Hidden Markov Model inference.
+    
+    This agent maintains beliefs over multiple regimes (e.g., bull/bear) and
+    adjusts Kelly sizing based on the estimated current regime.
+    
+    Mathematical Basis: Forward Algorithm for HMM filtering
+    
+    Key Innovation: Uses EWMA of returns to estimate regime, then applies
+    regime-specific Kelly sizing.
+    
+    Expected Behavior: Should detect bear markets and cut leverage, surviving
+    crashes that would ruin NaiveBayesKelly.
+    """
+    
+    def __init__(
+        self,
+        n_arms: int,
+        regime_params: dict,
+        odds: Optional[List[float]] = None,
+        transition_prob: float = 0.02,
+        ewma_alpha: float = 0.1
+    ):
+        """
+        Initialize HMMKellyAgent.
+        
+        Args:
+            n_arms: Number of arms K
+            regime_params: Dict with regime-specific parameters
+                          {'bull': {'mu': 0.05, 'sigma': 0.2},
+                           'bear': {'mu': -0.05, 'sigma': 0.3}}
+            odds: Payoff odds
+            transition_prob: P(switch regime) per step
+            ewma_alpha: Smoothing parameter for return estimation
+        """
+        super().__init__(n_arms, odds)
+        self.regime_params = regime_params
+        self.n_regimes = len(regime_params)
+        self.regime_names = list(regime_params.keys())
+        self.transition_prob = transition_prob
+        self.ewma_alpha = ewma_alpha
+        
+        # Build transition matrix (symmetric for simplicity)
+        self.trans_matrix = np.full((self.n_regimes, self.n_regimes), transition_prob)
+        np.fill_diagonal(self.trans_matrix, 1.0 - transition_prob * (self.n_regimes - 1))
+        
+        # State
+        self.regime_beliefs = np.ones(self.n_regimes) / self.n_regimes
+        self.ewma_return = 0.0
+        self.step_count = 0
+        
+        # History for tracking
+        self.belief_history = []
+    
+    def act(self, observation: Optional[np.ndarray] = None) -> np.ndarray:
+        """
+        Compute regime-weighted Kelly bet.
+        
+        f = Σ_i π_i * f*_i where π_i is belief in regime i
+        """
+        regime_kelly = []
+        
+        for regime_name in self.regime_names:
+            params = self.regime_params[regime_name]
+            mu = params.get('mu', 0.0)
+            sigma = params.get('sigma', 0.2)
+            
+            # For continuous returns, Kelly analog: f* = μ / σ²
+            # Clipped to [0, 0.5] for safety
+            if sigma > 0:
+                kelly = np.clip(mu / (sigma ** 2), 0.0, 0.5)
+            else:
+                kelly = 0.0
+            
+            regime_kelly.append(kelly)
+        
+        regime_kelly = np.array(regime_kelly)
+        
+        # Weighted average by regime beliefs
+        weighted_kelly = np.sum(self.regime_beliefs * regime_kelly)
+        
+        # Return as array for n_arms (apply same fraction to all)
+        return np.full(self.n_arms, weighted_kelly / self.n_arms)
+    
+    def update(self, outcomes: np.ndarray):
+        """
+        Update regime beliefs based on observed returns.
+        
+        Uses EWMA of returns and Gaussian likelihood for each regime.
+        """
+        # Convert binary outcome to pseudo-return
+        # outcomes > 0 means win, < 0 means loss
+        avg_outcome = np.mean(outcomes)
+        
+        # Update EWMA
+        self.ewma_return = (1 - self.ewma_alpha) * self.ewma_return + self.ewma_alpha * avg_outcome
+        
+        # Compute likelihoods for each regime
+        likelihoods = np.zeros(self.n_regimes)
+        
+        for i, regime_name in enumerate(self.regime_names):
+            params = self.regime_params[regime_name]
+            mu = params.get('mu', 0.0)
+            sigma = params.get('sigma', 0.2)
+            
+            # Gaussian likelihood (using EWMA return as observation)
+            diff = self.ewma_return - mu
+            likelihoods[i] = np.exp(-0.5 * (diff / sigma) ** 2) / sigma
+        
+        # Normalize likelihoods
+        likelihoods = likelihoods / (np.sum(likelihoods) + 1e-10)
+        
+        # Prediction step (apply transition)
+        predicted_beliefs = self.trans_matrix.T @ self.regime_beliefs
+        
+        # Update step (incorporate likelihood)
+        updated_beliefs = predicted_beliefs * likelihoods
+        updated_beliefs = updated_beliefs / (np.sum(updated_beliefs) + 1e-10)
+        
+        self.regime_beliefs = updated_beliefs
+        self.belief_history.append(self.regime_beliefs.copy())
+        self.step_count += 1
+    
+    def reset(self):
+        """Reset to uniform beliefs."""
+        self.regime_beliefs = np.ones(self.n_regimes) / self.n_regimes
+        self.ewma_return = 0.0
+        self.step_count = 0
+        self.belief_history = []
+    
+    def get_regime_probability(self, regime_name: str) -> float:
+        """Get belief probability for a specific regime."""
+        if regime_name in self.regime_names:
+            idx = self.regime_names.index(regime_name)
+            return self.regime_beliefs[idx]
+        return 0.0
+    
+    def get_state(self) -> dict:
+        state = super().get_state()
+        state['regime_beliefs'] = dict(zip(self.regime_names, self.regime_beliefs.tolist()))
+        state['ewma_return'] = self.ewma_return
+        return state
+
+
+# =============================================================================
+# FractionalKelly: Parametric Kelly Scaling
+# =============================================================================
+
+class FractionalKelly(BaseAgent):
+    """
+    Kelly with configurable fraction multiplier.
+    
+    Useful for mapping the Efficient Frontier (growth vs. risk).
+    
+    Mathematical Basis: f_actual = c * f_kelly where c ∈ (0, 2]
+    
+    c < 1: Underbetting (less growth, less risk)
+    c = 1: Full Kelly (optimal growth)
+    c > 1: Overbetting (less growth, MORE risk!)
+    """
+    
+    def __init__(
+        self,
+        n_arms: int,
+        true_probs: List[float],
+        odds: Optional[List[float]] = None,
+        fraction_multiplier: float = 1.0
+    ):
+        """
+        Initialize FractionalKelly.
+        
+        Args:
+            n_arms: Number of arms
+            true_probs: True win probabilities
+            odds: Payoff odds
+            fraction_multiplier: c, the Kelly fraction multiplier
+        """
+        super().__init__(n_arms, odds)
+        self.true_probs = np.array(true_probs)
+        self.fraction_multiplier = fraction_multiplier
+        
+        # Compute base Kelly
+        base_kelly = compute_kelly_fraction(self.true_probs, self.odds)
+        self.fractions = normalize_bets(base_kelly * fraction_multiplier)
+    
+    def act(self, observation: Optional[np.ndarray] = None) -> np.ndarray:
+        """Always bet the scaled Kelly fraction."""
+        return self.fractions.copy()
+    
+    def update(self, outcomes: np.ndarray):
+        """FractionalKelly doesn't learn."""
+        pass
+    
+    def reset(self):
+        """Nothing to reset."""
+        pass
+    
+    def get_state(self) -> dict:
+        state = super().get_state()
+        state['fraction_multiplier'] = self.fraction_multiplier
+        state['fractions'] = self.fractions.tolist()
+        return state
+
+
+# =============================================================================
 # Factory Functions
 # =============================================================================
+
+def create_fractional_kelly(
+    n_arms: int,
+    true_probs: List[float],
+    fraction: float,
+    odds: Optional[List[float]] = None
+) -> FractionalKelly:
+    """Create a FractionalKelly agent with specified multiplier."""
+    return FractionalKelly(n_arms, true_probs, odds, fraction_multiplier=fraction)
+
 
 def create_half_kelly(n_arms: int, true_probs: List[float], odds: Optional[List[float]] = None) -> KellyOracle:
     """Create a Half-Kelly agent (50% of optimal)."""

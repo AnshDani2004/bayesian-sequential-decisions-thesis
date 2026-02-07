@@ -5,7 +5,7 @@ This package contains the core simulation infrastructure:
 - distributions: Numba-optimized random number generators
 - environment: MarketEnvironment class (HMM regime switching)
 - market_env: MarketEnv class (multi-armed bandit)
-- agents: Agent hierarchy (Kelly, Thompson, etc.)
+- agents: Agent hierarchy (Kelly, Thompson, HMM, etc.)
 """
 
 from .distributions import (
@@ -25,9 +25,12 @@ from .agents import (
     ThompsonKellyAgent,
     FixedFraction,
     ConvexRiskAgent,
+    HMMKellyAgent,
+    FractionalKelly,
     compute_kelly_fraction,
     create_half_kelly,
     create_double_kelly,
+    create_fractional_kelly,
 )
 
 __all__ = [
@@ -49,7 +52,11 @@ __all__ = [
     'ThompsonKellyAgent',
     'FixedFraction',
     'ConvexRiskAgent',
+    'HMMKellyAgent',
+    'FractionalKelly',
     'compute_kelly_fraction',
     'create_half_kelly',
     'create_double_kelly',
+    'create_fractional_kelly',
 ]
+
