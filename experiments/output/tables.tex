@@ -1,0 +1,42 @@
+% Auto-generated LaTeX tables
+% Copy-paste into thesis document
+
+% Table 1: Comparative Performance
+\begin{table}[htbp]
+\centering
+\caption{Comparative Agent Performance in Student-t Environment ($\nu=3$, $T=1000$, $n=100$ runs)}
+\label{tab:comparative_performance}
+\begin{tabular}{lrrrr}
+\toprule
+Agent & Median Wealth & IQR & Max DD (95\%) & Ruin Prob \\
+\midrule
+Buy \& Hold & 1.57 & 3.29 & 0.89 & 0.04 \\
+Full Kelly ($f^*$) & 1.11 & 0.18 & 0.15 & 0.00 \\
+Fractional Kelly ($0.5 f^*$) & 1.06 & 0.08 & 0.07 & 0.00 \\
+Risk-Constrained Kelly & 1.06 & 0.09 & 0.07 & 0.00 \\
+Vol-Augmented HMM & 1.52 & 1.26 & 0.61 & 0.00 \\
+\bottomrule
+\end{tabular}
+
+\end{table}
+
+% Table 2: HMM Sensitivity Analysis
+\begin{table}[htbp]
+\centering
+\caption{HMM Sensitivity: Detection Speed vs. Stability Trade-off}
+\label{tab:hmm_sensitivity}
+\begin{tabular}{ccc}
+\toprule
+$A_{ii}$ & Mean Lag (steps) & FP Rate (\%) \\
+\midrule
+0.90 & 1.1 & 100.0 \\
+0.92 & 1.1 & 100.0 \\
+0.94 & 1.2 & 100.0 \\
+0.95 & 1.1 & 100.0 \\
+0.96 & 1.2 & 100.0 \\
+0.98 & 1.3 & 100.0 \\
+0.99 & 1.4 & 100.0 \\
+\bottomrule
+\end{tabular}
+
+\end{table}
